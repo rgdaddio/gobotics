@@ -7,5 +7,5 @@ Gobotics provides DB services, secure communication layers, and policy administr
 Providing clean interfaces with command and control of robotic communities and swarms through<br>
 easy to implement APIs.<br><br>
 
-Gobotics can be used as director level services to control bots from shop floor, through the supply<br>
-chain, all the way to customer delivery and billing.<br>
+Gobotics can be used as director level software services to control bots from shop floor, through<br>
+the supply chain, all the way to customer delivery and billing.<br>
