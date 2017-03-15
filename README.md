@@ -28,7 +28,6 @@ apt-get install bison<br>
 make sure the flex-2.6.0 is in your path<br>
 
 mkdir <someothergccconfigdir_on_different_level_from_new_gcc> <br>
-mkdir <someothergccconfigdir_on_different_level_from_new_gcc> <br>
 mkdir <someoutputdir> <br>
 
 cd someothergccconfigdir_on_different_level_from_new_gcc<br>
