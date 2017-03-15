@@ -13,9 +13,9 @@ the supply chain, all the way to customer delivery and billing.<br><br>
 You need GCC-7.0 and go1.7 to compile the current implementation this include gobotics and gobot-io<br>
 packages. This has been tested on Ubuntu 14.04.<br><br>
 
-Make a clean directory:
-mkdir <somenewgccdir> <br>
-cd <somenewgccdir>
+Make a clean directory:<br>
+mkdir somenewgccdir <br>
+cd somenewgccdir <br>
 svn checkout svn://gcc.gnu.org/svn/gcc/trunk . <br><br>
 
 download build and install flex-2.6.0<br>
@@ -27,8 +27,8 @@ apt-get install bison<br>
 
 make sure the flex-2.6.0 is in your path<br>
 
-mkdir <someothergccconfigdir_on_different_level_from_new_gcc> <br>
-mkdir <someoutputdir> <br>
+mkdir someothergccconfigdir_on_different_level_from_new_gcc <br>
+mkdir someoutputdir <br>
 
 cd someothergccconfigdir_on_different_level_from_new_gcc<br>
 ../somenewgccdir/configure --prefix=someothergccconfigdir/someoutputdir --enable-languages=c,c++,go --disable-multilib<br>
