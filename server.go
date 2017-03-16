@@ -70,5 +70,5 @@ func main() {
     mux.Handle("/list", http.HandlerFunc(list))
     mux.Handle("/die", http.HandlerFunc(die))
 
-    log.Fatal(http.ListenAndServe(":8080", mux))
+    log.Fatal(http.ListenAndServe("localhost:8080", mux))
 }
