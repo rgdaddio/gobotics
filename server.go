@@ -11,8 +11,6 @@ package main
                 Supervisord
                 upstart
 
-    TODO: gunicorn in go or how do I mulitthread server in golang?
-    TODO: Another webserver to talk to bots
 
 ***/
 
@@ -66,9 +64,33 @@ func main() {
     log.SetOutput(os.Stdout)
 
     //TODO: Maybe use Gorilla Mux ot GIN? Docker uses mux
-    mux := http.NewServeMux()
-    mux.Handle("/list", http.HandlerFunc(list))
-    mux.Handle("/die", http.HandlerFunc(die))
 
-    log.Fatal(http.ListenAndServe("localhost:8080", mux))
+    // Client api server: used to interface with command line tool
+    // listen on localhost:8080
+    client_api_server := http.NewServeMux()
+    client_api_server.Handle("/list", http.HandlerFunc(list))
+    client_api_server.Handle("/die", http.HandlerFunc(die))
+
+    log.Fatal(http.ListenAndServe("localhost:8080", client_server_api))
+    //Commenting out for now until we have a better idea what to use this for
+
+    // Create a channel to synchronize goroutines
+    //done := make(chan bool)
+
+    // service api server: used to interface with bots hooked up to gobotics network
+    // listen on all interfaces 8090
+    //service_api_server := http.NewServeMux()
+    //service_api_server.Handle("/list", http.HandlerFunc(list))
+    //service_api_server.Handle("/die", http.HandlerFunc(die))
+
+    // dispatch as go routine to be able to handle multiple http servers
+    //go func() {
+    //    http.ListenAndServe("localhost:8080", client_api_server)
+    //}
+
+    //go func() {
+    //    http.ListenAndServe(":8090", service_api_server)
+    //}
+
+    //<-done //Wait for goroutine to finish ( in reality this should never happen)
 }
