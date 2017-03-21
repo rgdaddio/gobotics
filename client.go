@@ -33,8 +33,3 @@ func send_req(url string) string {
     }
     return ret
 }
-
-func main() {
-    send_req("http://localhost:8080/list")
-    send_req("http://localhost:8080/die")
-}

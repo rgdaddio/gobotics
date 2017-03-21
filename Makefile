@@ -21,7 +21,8 @@ gobotics: gobotics.go
 
 	$(BUILDER) get -u -d gobot.io/x/gobot/...
 
-	$(BUILDER)  build -work -x gobotics.go
+	$(BUILDER)  build -work -x gobotics.go client.go
+	$(BUILDER)  build -work -x server.go
 
 clean veryclean:
 	$(RM) gobotics

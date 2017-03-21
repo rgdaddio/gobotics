@@ -46,7 +46,6 @@ func list(w http.ResponseWriter, req *http.Request) {
     json.NewEncoder(w).Encode(bots)
     log.Printf(req.Method)
     log.Printf(req.URL.Path)
-    //fmt.Fprintf(w, "Hello LIST, %q", html.EscapeString(req.URL.Path))
 }
 
 /***
@@ -70,27 +69,24 @@ func main() {
     client_api_server := http.NewServeMux()
     client_api_server.Handle("/list", http.HandlerFunc(list))
     client_api_server.Handle("/die", http.HandlerFunc(die))
-
-    log.Fatal(http.ListenAndServe("localhost:8080", client_server_api))
-    //Commenting out for now until we have a better idea what to use this for
-
-    // Create a channel to synchronize goroutines
-    //done := make(chan bool)
+    //log.Fatal(http.ListenAndServe("localhost:8080", client_server_api))
 
     // service api server: used to interface with bots hooked up to gobotics network
     // listen on all interfaces 8090
-    //service_api_server := http.NewServeMux()
-    //service_api_server.Handle("/list", http.HandlerFunc(list))
-    //service_api_server.Handle("/die", http.HandlerFunc(die))
+    service_api_server := http.NewServeMux()
+    service_api_server.Handle("/list", http.HandlerFunc(list))
+    service_api_server.Handle("/die", http.HandlerFunc(die))
 
-    // dispatch as go routine to be able to handle multiple http servers
-    //go func() {
-    //    http.ListenAndServe("localhost:8080", client_api_server)
-    //}
+    // Create a channel to synchronize goroutines
+    done := make(chan bool)
 
-    //go func() {
-    //    http.ListenAndServe(":8090", service_api_server)
-    //}
+    go func() {
+        http.ListenAndServe("localhost:8080", client_api_server)
+    }()
 
-    //<-done //Wait for goroutine to finish ( in reality this should never happen)
+    go func() {
+        http.ListenAndServe(":8090", service_api_server)
+    }()
+
+    <-done //Wait for goroutine to finish ( in reality this should never happen)
 }

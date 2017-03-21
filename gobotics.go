@@ -47,4 +47,6 @@ func main() {
   start_hardware_interface()
   fmt.Printf("%s", db)
   println("Welcome to gobotics")
+  send_req("http://localhost:8080/list")
+  send_req("http://localhost:8080/die")
 }
