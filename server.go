@@ -20,10 +20,15 @@ import (
     "net/http"
     "os"
     "time"
+    "fmt"
+    "database/sql"
 )
 
-type Bot struct {
+type Device struct {
     Name   string    `json:"name"`
+    Platform string `json:"platform"`
+    Mac string `json:"mac_address"`
+    Ip string `json:"ip_address"`
     Uptime time.Time `json:"uptime"`
 }
 
@@ -32,15 +37,32 @@ type Msg struct {
     Timestamp time.Time `json:"timestamp"`
 }
 
+
+/**
+
+TODO: Move db funcs to a file of its own
+**/
+func add_client_device(db *sql.DB, new_device Device){
+    fmt.Println(new_device)
+
+    stmt, err := db.Prepare("INSERT INTO client_devices( " +
+                          " name, platform, mac_address, ip_address " +
+                          " ) values(?,?,?,?)")
+  if err != nil { fmt.Println("HI"); panic(err) }
+  _, err = stmt.Exec(new_device.Name, new_device.Platform, new_device.Mac, new_device.Ip)
+  if err != nil { panic(err) }
+
+}
+
 /***
     /list : list all running bots being managed
 
 ***/
 func list(w http.ResponseWriter, req *http.Request) {
-    type Bots []Bot
+    type Bots []Device
     bots := Bots{
-        Bot{Name: "RasPI"},
-        Bot{Name: "Arduino"},
+        Device{Name: "RasPI"},
+        Device{Name: "Arduino"},
     }
 
     json.NewEncoder(w).Encode(bots)
@@ -59,34 +81,38 @@ func die(w http.ResponseWriter, req *http.Request) {
     os.Exit(1)
 }
 
+func device(w http.ResponseWriter, req *http.Request, db *sql.DB) {
+    switch req.Method {
+        case "GET":
+        // List information on device
+
+        case "POST":
+        // Add a new device.
+        new_device := Device{}
+        decoder := json.NewDecoder(req.Body)
+        decoder.Decode(&new_device)
+        add_client_device(db, new_device)
+
+        case "PUT":
+        // Update an existing record.
+
+        case "DELETE":
+        // Remove the record.
+
+        default:
+        // Give an error message.
+    }
+}
+
 func main() {
     log.SetOutput(os.Stdout)
 
     //TODO: Maybe use Gorilla Mux ot GIN? Docker uses mux
 
-    // Client api server: used to interface with command line tool
-    // listen on localhost:8080
     client_api_server := http.NewServeMux()
-    client_api_server.Handle("/list", http.HandlerFunc(list))
-    client_api_server.Handle("/die", http.HandlerFunc(die))
-    //log.Fatal(http.ListenAndServe("localhost:8080", client_server_api))
+    client_api_server.Handle("/client/list", http.HandlerFunc(list))
+    client_api_server.Handle("/client/die", http.HandlerFunc(die))
+    client_api_server.Handle("/client/device", http.HandlerFunc(die))
+    log.Fatal(http.ListenAndServeTLS(":443", client_api_server))
 
-    // service api server: used to interface with bots hooked up to gobotics network
-    // listen on all interfaces 8090
-    service_api_server := http.NewServeMux()
-    service_api_server.Handle("/list", http.HandlerFunc(list))
-    service_api_server.Handle("/die", http.HandlerFunc(die))
-
-    // Create a channel to synchronize goroutines
-    done := make(chan bool)
-
-    go func() {
-        http.ListenAndServe("localhost:8080", client_api_server)
-    }()
-
-    go func() {
-        http.ListenAndServe(":8090", service_api_server)
-    }()
-
-    <-done //Wait for goroutine to finish ( in reality this should never happen)
 }
