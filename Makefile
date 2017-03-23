@@ -26,3 +26,4 @@ gobotics: gobotics.go
 
 clean veryclean:
 	$(RM) gobotics
+	$(RM) server
