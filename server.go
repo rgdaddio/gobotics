@@ -50,6 +50,14 @@ type Msg struct {
 
 TODO: Move db funcs to a file of its own
 **/
+
+func init_db(db *sql.DB){
+  stmt, _ := db.Prepare("create table if not exists client_devices( " +
+      " name text, platform text, mac_address text, ip_address varchar(15) );" )
+  _, err := stmt.Exec()
+  if err != nil { panic(err) }
+}
+
 func add_client_device(db *sql.DB, new_device Device){
     fmt.Println(new_device)
 
@@ -274,6 +282,7 @@ func main() {
     if err != nil {
         log.Fatalf("Error on opening database connection: %s", err.Error())
     }
+    init_db(db)
 
     //TODO: Maybe use Gorilla Mux ot GIN? Docker uses mux
 
