@@ -60,14 +60,23 @@ func add_client_device(db *sql.DB, new_device Device){
 }
 
 func find_client_device(device_name string) Device{
-    log.Println(device_name)
     rows, err := db.Query("SELECT * from client_devices WHERE name = ?", device_name)
     if err != nil { log.Println("HI"); log.Fatal(err) }
     defer rows.Close()
     
     device := Device{}
+    var name string 
+    var platform string 
+    var mac_address string 
+    var ip_address string 
     if rows.Next() {
-        rows.Scan(&device)
+        rows.Scan(&name, &platform, &mac_address, &ip_address)
+        device = Device{
+            Name: name,
+            Platform: platform,
+            Mac: mac_address,
+            Ip: ip_address,
+          }
         log.Println(device)
     }
     return device
@@ -107,15 +116,15 @@ func device(w http.ResponseWriter, req *http.Request) {
             log.Println(req.RequestURI)
             url_par, _ := url.Parse(req.RequestURI)
             qmap,  _ := url.ParseQuery(url_par.RawQuery)
-            log.Println(qmap["device"][0])
             ret := find_client_device(qmap["device"][0])
-            log.Println(ret)
             json.NewEncoder(w).Encode(ret)
         case "POST":
             // Add a new device.
             new_device := Device{}
             decoder := json.NewDecoder(req.Body)
+            log.Println(req.Body)
             decoder.Decode(&new_device)
+            log.Println(new_device)
             add_client_device(db, new_device)
 
         case "PUT":
