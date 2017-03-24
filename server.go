@@ -97,6 +97,16 @@ func find_client_device(db *sql.DB, device_name string) Device{
     return device
 }
 
+func remove_client_device(db *sql.DB, device_name string) int64 {
+    stmt, err := db.Prepare("DELETE FROM client_devices WHERE name = ?")
+    if err != nil { panic(err) }
+    res, err := stmt.Exec(device_name)
+    if err != nil { panic(err) }
+    affect, _ := res.RowsAffected()
+    return affect
+}
+
+
 /***
     /list : list all running bots being managed
 
@@ -163,11 +173,20 @@ func device(w http.ResponseWriter, req *http.Request) {
             }
 
             update_client_device(db, new_device)
-            log.Println("PUT not yet implemented")
 
         case "DELETE":
             // Remove the record.
-            log.Println("DELETE not yet implemented")
+            url_par, _ := url.Parse(req.RequestURI)
+            qmap,  _ := url.ParseQuery(url_par.RawQuery)
+            ret := remove_client_device(db, qmap["device"][0])
+            if ret > 0 {
+                msg := Msg{Message: "Device Removed"}
+                json.NewEncoder(w).Encode(msg)
+            } else{
+                msg := Msg{Message: "Device name not found"}
+                json.NewEncoder(w).Encode(msg)
+            }
+            json.NewEncoder(w).Encode(ret)
 
         default:
             // Give an error message.
