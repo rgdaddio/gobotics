@@ -7,8 +7,6 @@ import (
     "gobot.io/x/gobot/platforms/firmata"
 )
 
-
-
 func start_hardware_interface(){
  firmataAdaptor := firmata.NewAdaptor("/dev/ttyACM0")
  //println(firmataAdaptor)
@@ -35,6 +33,6 @@ func main() {
 
   start_hardware_interface()
   println("Welcome to gobotics")
-  send_req("http://localhost:8080/list")
-  send_req("http://localhost:8080/die")
+  send_req("http://localhost:8080/client/devices")
+  send_req("http://localhost:8080/client/die")
 }
