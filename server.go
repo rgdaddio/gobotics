@@ -38,6 +38,8 @@ type Device struct {
   //  Uptime time.Time `json:"uptime"`
 }
 
+type Devices []Device
+
 type Msg struct {
     Message   string    `json:"msg"`
     Timestamp time.Time `json:"timestamp"`
@@ -97,6 +99,31 @@ func find_client_device(db *sql.DB, device_name string) Device{
     return device
 }
 
+func get_client_devices(db *sql.DB) Devices{
+    rows, err := db.Query("SELECT * from client_devices")
+    if err != nil { log.Println("HI"); log.Fatal(err) }
+    defer rows.Close()
+   
+    devices := Devices{} 
+    for rows.Next() {
+        device := Device{}
+        var name string 
+        var platform string 
+        var mac_address string 
+        var ip_address string 
+
+        rows.Scan(&name, &platform, &mac_address, &ip_address)
+        device = Device{
+            Name: name,
+            Platform: platform,
+            Mac: mac_address,
+            Ip: ip_address,
+          }
+        devices = append(devices, device)
+    }
+    return devices
+}
+
 func remove_client_device(db *sql.DB, device_name string) int64 {
     stmt, err := db.Prepare("DELETE FROM client_devices WHERE name = ?")
     if err != nil { panic(err) }
@@ -108,19 +135,25 @@ func remove_client_device(db *sql.DB, device_name string) int64 {
 
 
 /***
-    /list : list all running bots being managed
-
+    URI: /client/devices
+    paths: 
+        GET:
+            responses:
+                200:
+                    description: list of all devices being managed
 ***/
-func list(w http.ResponseWriter, req *http.Request) {
-    type Bots []Device
-    bots := Bots{
-        Device{Name: "RasPI"},
-        Device{Name: "Arduino"},
-    }
+func devices(w http.ResponseWriter, req *http.Request) {
+    switch req.Method {
+        case "GET":
+            // List information on all devices
+            devices := get_client_devices(db)
+            json.NewEncoder(w).Encode(devices)
 
-    json.NewEncoder(w).Encode(bots)
-    log.Printf(req.Method)
-    log.Printf(req.URL.Path)
+        default:
+            // Give an error message.
+            msg := Msg{Message: "Only GET supported for this api"}
+            json.NewEncoder(w).Encode(msg)
+    }
 }
 
 /***
@@ -190,7 +223,7 @@ func device(w http.ResponseWriter, req *http.Request) {
 
         default:
             // Give an error message.
-            log.Println("Unknown Error")
+            log.Println("Unknown Method")
     }
 }
 
@@ -200,7 +233,7 @@ func main() {
     var err error
     db, err = sql.Open("sqlite3", "./foo.db")
     //db.SetMaxIdleConns(50)
-    fmt.Printf("%s", db)
+    fmt.Printf("%s\n", db)
 
     err = db.Ping() // make sure the database conn is alive
     if err != nil {
@@ -210,9 +243,9 @@ func main() {
     //TODO: Maybe use Gorilla Mux ot GIN? Docker uses mux
 
     client_api_server := http.NewServeMux()
-    client_api_server.Handle("/client/list", http.HandlerFunc(list))
     client_api_server.Handle("/client/die", http.HandlerFunc(die))
     client_api_server.Handle("/client/device", http.HandlerFunc(device))
+    client_api_server.Handle("/client/devices", http.HandlerFunc(devices))
     // log.Fatal(http.ListenAndServeTLS(":443", "cert.pem", "key.pem", client_api_server))
     // Debugging purposes
     log.Fatal(http.ListenAndServe(":8080", client_api_server))
