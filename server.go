@@ -18,10 +18,12 @@ import (
     "encoding/json"
     "log"
     "net/http"
+    "net/url"
     "os"
     "time"
     "fmt"
     "database/sql"
+    _"github.com/mattn/go-sqlite3"
 )
 
 var db *sql.DB // global variable to share it between main and the HTTP handler
@@ -55,7 +57,20 @@ func add_client_device(db *sql.DB, new_device Device){
   if err != nil { fmt.Println("HI"); panic(err) }
   _, err = stmt.Exec(new_device.Name, new_device.Platform, new_device.Mac, new_device.Ip)
   if err != nil { panic(err) }
+}
 
+func find_client_device(device_name string) Device{
+    log.Println(device_name)
+    rows, err := db.Query("SELECT * from client_devices WHERE name = ?", device_name)
+    if err != nil { log.Println("HI"); log.Fatal(err) }
+    defer rows.Close()
+    
+    device := Device{}
+    if rows.Next() {
+        rows.Scan(&device)
+        log.Println(device)
+    }
+    return device
 }
 
 /***
@@ -88,31 +103,42 @@ func die(w http.ResponseWriter, req *http.Request) {
 func device(w http.ResponseWriter, req *http.Request) {
     switch req.Method {
         case "GET":
-        // List information on device
-
+            // List information on a specific device
+            log.Println(req.RequestURI)
+            url_par, _ := url.Parse(req.RequestURI)
+            qmap,  _ := url.ParseQuery(url_par.RawQuery)
+            log.Println(qmap["device"][0])
+            ret := find_client_device(qmap["device"][0])
+            log.Println(ret)
+            json.NewEncoder(w).Encode(ret)
         case "POST":
-        // Add a new device.
-        new_device := Device{}
-        decoder := json.NewDecoder(req.Body)
-        decoder.Decode(&new_device)
-        add_client_device(db, new_device)
+            // Add a new device.
+            new_device := Device{}
+            decoder := json.NewDecoder(req.Body)
+            decoder.Decode(&new_device)
+            add_client_device(db, new_device)
 
         case "PUT":
-        // Update an existing record.
+            // Update an existing record.
+            log.Println("PUT not yet implemented")
 
         case "DELETE":
-        // Remove the record.
+            // Remove the record.
+            log.Println("DELETE not yet implemented")
 
         default:
-        // Give an error message.
+            // Give an error message.
+            log.Println("Unknown Error")
     }
 }
 
 func main() {
     log.SetOutput(os.Stdout)
 
-    db, err := sql.Open("sqlite3", "./foo.db")
-    db.SetMaxIdleConns(50)
+    var err error
+    db, err = sql.Open("sqlite3", "./foo.db")
+    //db.SetMaxIdleConns(50)
+    fmt.Printf("%s", db)
 
     err = db.Ping() // make sure the database conn is alive
     if err != nil {
@@ -127,6 +153,6 @@ func main() {
     client_api_server.Handle("/client/device", http.HandlerFunc(device))
     // log.Fatal(http.ListenAndServeTLS(":443", "cert.pem", "key.pem", client_api_server))
     // Debugging purposes
-    log.Fatal(http.ListenAndServe(":443", client_api_server))
+    log.Fatal(http.ListenAndServe(":8080", client_api_server))
 
 }
