@@ -35,7 +35,7 @@ type Device struct {
     Platform string `json:"platform"`
     Mac string `json:"mac_address"`
     Ip string `json:"ip_address"`
-    Uptime time.Time `json:"uptime"`
+  //  Uptime time.Time `json:"uptime"`
 }
 
 type Msg struct {
@@ -59,7 +59,22 @@ func add_client_device(db *sql.DB, new_device Device){
   if err != nil { panic(err) }
 }
 
-func find_client_device(device_name string) Device{
+func update_client_device(db *sql.DB, device Device){
+    fmt.Println(device)
+    fmt.Println(device.Mac)
+
+
+    stmt, err := db.Prepare("UPDATE client_devices SET  " +
+                          " mac_address = ?,  ip_address = ? " +
+                          " WHERE name = ?")
+  if err != nil { fmt.Println("HI"); panic(err) }
+  res, err := stmt.Exec(device.Mac, device.Ip, device.Name)
+  if err != nil { panic(err) }
+    affect, _ := res.RowsAffected()
+    log.Println(affect)
+}
+
+func find_client_device(db *sql.DB, device_name string) Device{
     rows, err := db.Query("SELECT * from client_devices WHERE name = ?", device_name)
     if err != nil { log.Println("HI"); log.Fatal(err) }
     defer rows.Close()
@@ -116,19 +131,38 @@ func device(w http.ResponseWriter, req *http.Request) {
             log.Println(req.RequestURI)
             url_par, _ := url.Parse(req.RequestURI)
             qmap,  _ := url.ParseQuery(url_par.RawQuery)
-            ret := find_client_device(qmap["device"][0])
+            ret := find_client_device(db, qmap["device"][0])
             json.NewEncoder(w).Encode(ret)
         case "POST":
             // Add a new device.
             new_device := Device{}
             decoder := json.NewDecoder(req.Body)
-            log.Println(req.Body)
             decoder.Decode(&new_device)
             log.Println(new_device)
             add_client_device(db, new_device)
 
         case "PUT":
             // Update an existing record.
+            new_device := Device{}
+            decoder := json.NewDecoder(req.Body)
+            decoder.Decode(&new_device)
+            log.Println(new_device)
+            if (Device{}) == new_device {
+                msg := Msg{Message: "Please give information for update"}
+                json.NewEncoder(w).Encode(msg)
+            }
+
+            if new_device.Name == ""{
+                msg := Msg{Message: "You must specify name when trying to update device"}
+                json.NewEncoder(w).Encode(msg)
+            }
+
+            if new_device.Platform == "" && new_device.Mac == "" && new_device.Ip == ""{
+                msg := Msg{Message: "Please give information for update"}
+                json.NewEncoder(w).Encode(msg)
+            }
+
+            update_client_device(db, new_device)
             log.Println("PUT not yet implemented")
 
         case "DELETE":
