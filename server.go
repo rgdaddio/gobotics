@@ -24,6 +24,10 @@ import (
     "database/sql"
 )
 
+var db *sql.DB // global variable to share it between main and the HTTP handler
+                //represents a connection pool, not a single connection
+
+
 type Device struct {
     Name   string    `json:"name"`
     Platform string `json:"platform"`
@@ -81,7 +85,7 @@ func die(w http.ResponseWriter, req *http.Request) {
     os.Exit(1)
 }
 
-func device(w http.ResponseWriter, req *http.Request, db *sql.DB) {
+func device(w http.ResponseWriter, req *http.Request) {
     switch req.Method {
         case "GET":
         // List information on device
@@ -107,12 +111,22 @@ func device(w http.ResponseWriter, req *http.Request, db *sql.DB) {
 func main() {
     log.SetOutput(os.Stdout)
 
+    db, err := sql.Open("sqlite3", "./foo.db")
+    db.SetMaxIdleConns(50)
+
+    err = db.Ping() // make sure the database conn is alive
+    if err != nil {
+        log.Fatalf("Error on opening database connection: %s", err.Error())
+    }
+
     //TODO: Maybe use Gorilla Mux ot GIN? Docker uses mux
 
     client_api_server := http.NewServeMux()
     client_api_server.Handle("/client/list", http.HandlerFunc(list))
     client_api_server.Handle("/client/die", http.HandlerFunc(die))
-    client_api_server.Handle("/client/device", http.HandlerFunc(die))
-    log.Fatal(http.ListenAndServeTLS(":443", client_api_server))
+    client_api_server.Handle("/client/device", http.HandlerFunc(device))
+    // log.Fatal(http.ListenAndServeTLS(":443", "cert.pem", "key.pem", client_api_server))
+    // Debugging purposes
+    log.Fatal(http.ListenAndServe(":443", client_api_server))
 
 }
