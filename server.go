@@ -157,7 +157,8 @@ func devices(w http.ResponseWriter, req *http.Request) {
 }
 
 /***
-    /kill:  do a sys exit
+    URI: /client/die 
+     do a sys exit
 ***/
 func die(w http.ResponseWriter, req *http.Request) {
     log.Printf(req.Method)
@@ -167,6 +168,40 @@ func die(w http.ResponseWriter, req *http.Request) {
     os.Exit(1)
 }
 
+/***
+    URI: /client/device
+    paths: 
+        GET:
+            query parameters:
+                device: name of device to get info for
+            responses:
+                200:
+                    description: return information on device
+	POST:
+            parameters:
+                name string : name of device
+                mac_address string : mac_address of device
+                ip_address  string: ip of device
+                platform string: platform
+            responses:
+                200:
+                    description: device entry created
+	PUT:
+            parameters:
+                name string : name of device
+                mac_address string : mac_address of device
+                ip_address  string: ip of device
+                platform string: platform
+            responses:
+                200:
+                    description: device entry updated based on information in body
+	DELETE:
+            query parameters:
+                device: name of device to get info for
+            responses:
+                200:
+                    description: device removed 
+***/
 func device(w http.ResponseWriter, req *http.Request) {
     switch req.Method {
         case "GET":
