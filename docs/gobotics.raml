@@ -1,0 +1,128 @@
+#%RAML 1.0
+title: Gobotics Client  # required title
+version: 1
+baseUri: https://{server host}/
+documentation:
+  - title: Gobotics Client Api
+    content: |
+      Welcome to the documentation for the gobotics server client api.
+#  - title: Chapter two
+#    content: |
+#      More content here. Including **bold** text!
+
+types:
+  device:
+    type: object
+    properties:
+      name: 
+        type: string
+        required: true
+      platform: 
+        type: string
+        required: true
+      mac_address: 
+        type: string
+      ip_address: 
+        type: string
+        required: true
+
+/client:
+
+  /device:
+    description: Api for getting, creating, updating, deleting metadata on a specific device
+    displayName: TEST
+    get:
+      description: Retrieve metadata on a specific device
+      queryParameters:
+        device:
+          description: "device name to get metadata for"
+      responses:
+        200: # HTTP status code
+          body: # declare content of response
+            application/json: # media type
+              type: | # structural definition of a response (schema or type)
+                {
+                  "name": "name of device",
+                  "platform": "platform of device",
+                  "mac_address": "deivce's MAC",
+                  "ip_address": "deivce's IP address"
+                }
+              example: # example how a response looks like
+                {
+                  "name":"test1",
+                  "platform":"pi",
+                  "mac_address":"00:0a:95:9d:68:16",
+                  "ip_address":"127.0.0.1"
+                }
+    post:
+      description: Create metadata for a new device
+      body: # declare content of response
+        application/json: # media type
+          type: | # structural definition of a response (schema or type)
+            {
+              "name": "name of device",
+              "platform": "platform of device",
+              "mac_address": "deivce's MAC",
+              "ip_address": "deivce's IP address"
+            }
+          example: # example how a response looks like
+            {
+              "name":"test1",
+              "platform":"pi",
+              "mac_address":"00:0a:95:9d:68:16",
+              "ip_address":"127.0.0.1"
+            }
+      responses:
+        200: # HTTP status code
+    put:
+      description: Update metadata for a specific device
+      body: # declare content of response
+        application/json: # media type
+          type: | # structural definition of a response (schema or type)
+            {
+              "name": "name of device you cannot update this but need it to refernce which device to update",
+              "platform": "platform of device",
+              "mac_address": "deivce's MAC",
+              "ip_address": "deivce's IP address"
+            }
+          example: # example how a response looks like
+            {
+              "name":"test1",
+              "platform":"pi",
+              "mac_address":"00:0a:95:9d:68:16",
+              "ip_address":"127.0.0.1"
+            }
+    delete:
+      description: Delete metadata for a specific device
+      queryParameters:
+        device:
+          description: "device name to delete"
+      responses:
+        200: 
+          body: 
+            application/json: # media type
+              type: | # structural definition of a response (schema or type)
+                {
+                  "msg":"A message about the delete",
+                  "timestamp":"timestamp of when sent"
+                }
+              example: # example how a response looks like
+                {
+                  "msg":"Device Removed",
+                  "timestamp":"0001-01-01T00:00:00Z"
+                }
+  /devices:
+    description: list all devicese
+    displayName: TEST
+    get:
+      description: Retrieve metadata on all devices
+      responses:
+        200: # HTTP status code
+          body:
+            application/json: # media type
+              type: device[]
+              example: # example how a response looks like
+                [
+                  {"name":"test","platform":"pi","mac_address":"00:0a:95:9d:68:16","ip_address":"127.0.0.1"},
+                  {"name":"test2","platform":"arduino","mac_address":"44:0a:95:9d:68:16","ip_address":"127.0.0.2"}
+                ]
