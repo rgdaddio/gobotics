@@ -290,8 +290,8 @@ func main() {
     client_api_server.Handle("/client/die", http.HandlerFunc(die))
     client_api_server.Handle("/client/device", http.HandlerFunc(device))
     client_api_server.Handle("/client/devices", http.HandlerFunc(devices))
-    // log.Fatal(http.ListenAndServeTLS(":443", "cert.pem", "key.pem", client_api_server))
+    log.Fatal(http.ListenAndServeTLS(":8080", "cert.pem", "key.pem", client_api_server))
     // Debugging purposes
-    log.Fatal(http.ListenAndServe(":8080", client_api_server))
+    //log.Fatal(http.ListenAndServe(":8080", client_api_server))
 
 }
