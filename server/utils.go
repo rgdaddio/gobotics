@@ -1,3 +1,4 @@
+//TODO: make into a package?
 package main
 
 import (
@@ -11,9 +12,9 @@ import (
 // PORT     STATE  SERVICE
 // 8000/tcp closed http-alt
 // I think openbsd-libc uses /etc/protocols and /etc/services
-func port_scan(port int) bool {
+func port_scan(ip_address string, port int) bool {
 	var closed bool
-        conn, err := net.Dial("tcp", fmt.Sprintf("23.79.234.237:%d", port))
+        conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", ip_address,  port))
         if err != nil {
                 fmt.Println("Port closed")
                 fmt.Printf("%s\n", err)

@@ -126,3 +126,32 @@ types:
                   {"name":"test","platform":"pi","mac_address":"00:0a:95:9d:68:16","ip_address":"127.0.0.1"},
                   {"name":"test2","platform":"arduino","mac_address":"44:0a:95:9d:68:16","ip_address":"127.0.0.2"}
                 ]
+/security:
+  /scanDevicePort:
+    description: Get TCP port info
+    displayName: TEST
+    get:
+      description: Retrieve metadata on a specific device
+      queryParameters:
+        device:
+          description: "device name to get metadata for"
+        portNo:
+          description: "port number"
+      responses:
+        200: # HTTP status code
+          body: # declare content of response
+            application/json: # media type
+              type: | # structural definition of a response (schema or type)
+                {
+                  "name": "name of device",
+                  "ip_address": "deivce's IP address",
+                  "port": "port number",
+                  "tcp_port_closed" : "port open/closed status"
+                }
+              example: # example how a response looks like
+                {
+                  "name":"test1",
+                  "ip_address":"127.0.0.1",
+                  "port":9000,
+                  "tcp_port_closed":true
+                }

@@ -219,4 +219,15 @@
     "mac_address": "44:0a:95:9d:68:16",
     "ip_address": "127.0.0.2"
   }
-]</code></pre></div></div></div></div></div></div></div></div></div></div></div></div><div class="col-md-3"><div id="sidebar" class="hidden-print affix" role="complementary"><ul class="nav nav-pills nav-stacked"><li><a href="#client">/client</a></li></ul></div></div></div></div></body></html>
+]</code></pre></div></div></div></div></div></div></div></div></div></div></div><div class="panel panel-default"><div class="panel-heading"><h3 id="security" class="panel-title">/security</h3></div><div class="panel-body"><div class="panel-group"><div class="panel panel-white resource-modal"><div class="panel-heading"><h4 class="panel-title"><a class="collapsed" data-toggle="collapse" href="#panel_security_scandeviceport"><span class="parent">/security</span>/scanDevicePort</a> <span class="methods"><a href="#security_scandeviceport_get"><span class="badge badge_get">get</span></a></span></h4></div><div id="panel_security_scandeviceport" class="panel-collapse collapse"><div class="panel-body"><div class="resource-description"><p>Get TCP port info</p></div><div class="list-group"><div onclick="window.location.href = '#security_scandeviceport_get'" class="list-group-item"><span class="badge badge_get">get</span><div class="method_description"><p>Retrieve metadata on a specific device</p></div><div class="clearfix"></div></div></div></div></div><div class="modal fade" tabindex="0" id="security_scandeviceport_get"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button><h4 class="modal-title" id="myModalLabel"><span class="badge badge_get">get</span> <span class="parent">/security</span>/scanDevicePort</h4></div><div class="modal-body"><div class="alert alert-info"><p>Retrieve metadata on a specific device</p></div><ul class="nav nav-tabs"><li class="active"><a href="#security_scandeviceport_get_request" data-toggle="tab">Request</a></li><li><a href="#security_scandeviceport_get_response" data-toggle="tab">Response</a></li></ul><div class="tab-content"><div class="tab-pane active" id="security_scandeviceport_get_request"><h3>Query Parameters</h3><ul><li><strong>device</strong>: <em>required (string)</em><p>device name to get metadata for</p></li><li><strong>portNo</strong>: <em>required (string)</em><p>port number</p></li></ul></div><div class="tab-pane" id="security_scandeviceport_get_response"><h2>HTTP status code <a href="http://httpstatus.es/200" target="_blank">200</a></h2><h3>Body</h3><p><strong>Media type</strong>: application/json</p><p><strong>Type</strong>:</p><pre><code>{
+  "name": "name of device",
+  "ip_address": "deivce&#39;s IP address",
+  "port": "port number",
+  "tcp_port_closed" : "port open/closed status"
+}
+</code></pre><p><strong>Example</strong>:</p><div class="examples"><pre><code>{
+  "name": "test1",
+  "ip_address": "127.0.0.1",
+  "port": 9000,
+  "tcp_port_closed": true
+}</code></pre></div></div></div></div></div></div></div></div></div></div></div></div><div class="col-md-3"><div id="sidebar" class="hidden-print affix" role="complementary"><ul class="nav nav-pills nav-stacked"><li><a href="#client">/client</a></li><li><a href="#security">/security</a></li></ul></div></div></div></div></body></html>
