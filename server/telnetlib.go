@@ -101,7 +101,7 @@ func (telnet Telnet) read_all() {
 	fmt.Println(string(p))
 }
 
-func main() {
+/**func main() {
 	tel := telnet("india.colorado.edu", 13)
 	tel.read_all()
-}
+}**/
