@@ -53,7 +53,7 @@ TODO: Move db funcs to a file of its own
 
 func init_db(db *sql.DB){
   stmt, _ := db.Prepare("create table if not exists client_devices( " +
-      " name text, platform text, mac_address text, ip_address varchar(15) );" )
+      " name text, platform text, mac_address text, ip_address varchar(15), stats_table text);" )
   _, err := stmt.Exec()
   if err != nil { panic(err) }
 }
