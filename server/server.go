@@ -270,6 +270,12 @@ func device(w http.ResponseWriter, req *http.Request) {
     }
 }
 
+// TODO: this is scketches what we want if we ever want to start
+// dynamically allocating REST APIs  
+func dynamically_add_api( server *http.ServeMux, path string, handler_func func(http.ResponseWriter,*http.Request)){
+    server.Handle(path, http.HandlerFunc(handler_func))
+}
+
 func main() {
     log.SetOutput(os.Stdout)
 
