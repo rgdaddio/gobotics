@@ -10,11 +10,11 @@ default: all
 all: gobotics
 
 gobotics: gobotics.go
-	if test ! -s go1.8.linux-amd64.tar.gz ;\
+	if test ! -s go1.10.1.linux-amd64.tar.gz ;\
 	then \
-		rm -f go1.8.linux-amd64.tar* ; \
-		wget https://storage.googleapis.com/golang/go1.8.linux-amd64.tar.gz ; \
-		tar -xvzf go1.8.linux-amd64.tar.gz ; \
+		rm -f go1.10.1.linux-amd64.tar* ; \
+		wget https://storage.googleapis.com/golang/go1.10.1.linux-amd64.tar.gz ; \
+		tar -xvzf go1.10.1.linux-amd64.tar.gz ; \
 	fi;
 
 	$(BUILDER) get -u github.com/mattn/go-sqlite3
