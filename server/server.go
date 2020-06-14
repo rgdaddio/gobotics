@@ -1,19 +1,5 @@
 package main
 
-/***
-
-    TODO: How to properly daemonize. Apparently its discouraged to daemonize in golang. (threadings, coroutines, privalages related to fork)
-            See:
-                https://github.com/VividCortex/godaemon
-                http://www.ryanday.net/2012/09/04/the-problem-with-a-golang-daemon/
-                http://stackoverflow.com/questions/12486691/how-do-i-get-my-golang-web-server-to-run-in-the-background/
-            Ideas:
-                Supervisord
-                upstart
-
-
-***/
-
 import (
     "encoding/json"
     "log"
@@ -297,11 +283,15 @@ func main() {
     client_api_server.Handle("/client/device", http.HandlerFunc(device))
     client_api_server.Handle("/client/devices", http.HandlerFunc(devices))
 
-
     client_api_server.Handle("/security/scanDevicePort", http.HandlerFunc(scan_port))
 
-    log.Fatal(http.ListenAndServeTLS(":8080", "cert.pem", "key.pem", client_api_server))
+    s := &http.Server{
+        Addr: ":8080",
+        Handler: client_api_server,
+    }
+
+    //log.Fatal(s.ListenAndServeTLS("cert.pem", "key.pem"))
     // Debugging purposes
-    //log.Fatal(http.ListenAndServe(":8080", client_api_server))
+    log.Fatal(s.ListenAndServe(":8080", client_api_server))
 
 }
