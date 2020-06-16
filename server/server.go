@@ -26,7 +26,7 @@ func init_db(db *sql.DB){
 }
 
 
-func main() {
+func Serve() {
     log.SetOutput(os.Stdout)
 
     var err error

@@ -7,7 +7,7 @@ default: all
 all: gobotics
 
 build_server:
-	$(BUILDER) build -o gobotics_server -work -x server/*
+	$(BUILDER) build -o gobotics_server -work -x cmd/server/*
 
 gobotics: gobotics.go
 #	if test ! -s go1.10.1.linux-amd64.tar.gz ;\
