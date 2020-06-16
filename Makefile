@@ -1,16 +1,13 @@
-CC      = /home/rdaddio/myGCC_run/myGCC_out/bin/gccgo
-CFLAGS  = -g
-RM      = rm -f
-BUILDER := /usr/local/opt/go@1.13/bin/go
 #export GOPATH := $(shell pwd)/lib
 #export GOROOT := $(shell pwd)/go
+BUILDER := /usr/local/opt/go@1.13/bin/go
 
 default: all
 
 all: gobotics
 
 build_server:
-	$(BUILDER)  build -o gobotics_server -work -x server/*
+	$(BUILDER) build -o gobotics_server -work -x server/*
 
 gobotics: gobotics.go
 #	if test ! -s go1.10.1.linux-amd64.tar.gz ;\
