@@ -1,28 +1,24 @@
 #export GOPATH := $(shell pwd)/lib
 #export GOROOT := $(shell pwd)/go
-BUILDER := /usr/local/opt/go@1.13/bin/go
 
 default: all
 
 all: gobotics
 
 build_server:
-	$(BUILDER) build -o gobotics_server -work -x cmd/server/*
+	go build -o gobotics_server -work -x cmd/server/*
+
+build_client:
+	go build -o gobotics_client -work -x cmd/client/*
 
 gobotics: gobotics.go
-#	if test ! -s go1.10.1.linux-amd64.tar.gz ;\
-#	then \
-#		rm -f go1.10.1.linux-amd64.tar* ; \
-#		wget https://storage.googleapis.com/golang/go1.10.1.linux-amd64.tar.gz ; \
-#		tar -xvzf go1.10.1.linux-amd64.tar.gz ; \
-#	fi;
 
 	$(BUILDER) get -u github.com/mattn/go-sqlite3
 
 	$(BUILDER) get -u -d gobot.io/x/gobot/...
 
-	$(BUILDER)  build -work -x gobotics.go client.go
-	$(BUILDER)  build -o gobotics_server -work -x server/* 
+	build_client
+	build_server
 
 clean veryclean:
 	$(RM) gobotics
