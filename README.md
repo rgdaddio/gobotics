@@ -18,3 +18,8 @@ This has been tested on Ubuntu 14.04 installs and runs out-of-the-box just type 
 The server will run mostly on ssl. To generate dev certs use:
 $ openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 3000 -nodes
 
+#TODO
+* better go coding habbits
+* logging
+* Front end <- -> backend 
+* jwt cookie
