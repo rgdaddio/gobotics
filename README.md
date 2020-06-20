@@ -1,25 +1,34 @@
 # gobotics
-Golang robotics apis and libraries<br>
+Imagine a robotics solution that provides:
+*  robotics apis and libraries middleware
+*  policy interfaces to robotic devices
+*  DB services, secure communication layers, and policy administration.
+*  clean interfaces with command and control of robotic communities and swarms through
+*  access and control via commandline tool
+*  access and control via a webportal 
+*  can be used as director level software services to control bots from shop floor, through the supply chain, all the way to customer delivery and billing.
 
-Gobotics is middleware that provides policy interfaces to robotic devices.<br><br>
+Gobotics is a skunkworkds proof of concept project to help us learn more about golang/web development while keeping the points above in mind.
 
-Gobotics provides DB services, secure communication layers, and policy administration.<br> 
-Providing clean interfaces with command and control of robotic communities and swarms through<br>
-easy to implement APIs.<br><br>
+Currently it is composed of the following:
+* gobotics_server: REST API server (golang)
+* gobotics_client: commandline client (golang)
 
-Gobotics can be used as director level software services to control bots from shop floor, through<br>
-the supply chain, all the way to customer delivery and billing.<br><br>
+Pending:
+* Frontend WebApp: TODO React/Redux web application
+* actual robotics apis and libraries? (unsure what this will actually be.)
 
-Get it:<br>
-git clone https://github.com/rgdaddio/gobotics<br><br>
-
-This has been tested on Ubuntu 14.04 installs and runs out-of-the-box just type make<br><br>
-
-The server will run mostly on ssl. To generate dev certs use:
-$ openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 3000 -nodes
 
 #TODO
+* go mod
+* serve react app
+
+* ssl
+* jwt cookie
+
 * better go coding habbits
 * logging
 * Front end <- -> backend 
-* jwt cookie
+
+The server will run mostly on ssl. To generate dev certs use:
+$ openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 3000 -nodes
