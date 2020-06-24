@@ -58,10 +58,7 @@ class App extends Component<AppProps, AppState>{
 
     onSubmit = (event: MouseEvent<HTMLButtonElement>) => {
         event.preventDefault();
-        console.log(this.state.assets)
-        console.log(this.state.addAssetForm)
-        // TODO ask rohan
-        if (this.state.addAssetForm.name === "" && this.state.addAssetForm.location === "")
+        if (this.state.addAssetForm.name == "" && this.state.addAssetForm.location == "")
             return;
         else {
             const newAsset: Asset = {
@@ -73,7 +70,7 @@ class App extends Component<AppProps, AppState>{
             this.setState({
                 assets: this.state.assets.concat(newAsset),
                 // TODO ask rohan
-                addAssetForm: {name: "", location: ""} as Asset
+                addAssetForm: {name: "", location: "", device_status: "", id: ""}
             });
         }
     }
