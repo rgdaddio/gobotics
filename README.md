@@ -13,6 +13,7 @@ Gobotics is a skunkworkds proof of concept project to help us learn more about g
 Currently it is composed of the following:
 * gobotics_server: REST API server (golang)
 * gobotics_client: commandline client (golang)
+* gobotics-frontend: React Frontend web application
 
 Pending:
 * Frontend WebApp: TODO React/Redux web application
