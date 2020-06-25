@@ -49,7 +49,7 @@ class App extends Component<AppProps, AppState>{
             ]
         }
     }
-    handleAssetFormChange = (event : React.ChangeEvent<HTMLInputElement>) => {
+    handleAssetFormChange = (event : React.ChangeEvent<HTMLFormElement>) => {
         const addAssetFormState = this.state.addAssetForm;
         const { name, value } = event.target;
         addAssetFormState[name] = value;

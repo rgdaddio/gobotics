@@ -5,6 +5,7 @@ import Button from '@material-ui/core/Button';
 
 import { makeStyles } from '@material-ui/core/styles';
 import Asset from "../types/Asset";
+import { MouseEvent } from 'react';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -29,13 +30,15 @@ function ShowAddAssetForm(props: any) {
     return null;
   }
 type AssetProps = {
-    addAssetForm: Asset
+    addAssetForm: Asset,
+    handleChange: (event: MouseEvent<HTMLInputElement>) => void
+    onSubmit: (event: MouseEvent<HTMLButtonElement>) => void
 }
 function AssetForm(props: AssetProps)  {
     const classes = useStyles();
     return(
         <div>
-            <form className={classes.root} onChange={props.handleChange}  onSubmit={props.onSubmit}>
+            <form className={classes.root} onChange={props.handleChange}>
                 <div>
                     <TextField required id="assetName" name="name" label="Device Name" defaultValue="" autoComplete='off' value={props.addAssetForm.name} />   
                 </div>   
