@@ -47,7 +47,8 @@ func Serve() {
 	// React App
 	// TODO if this were a real app: serve with NGINX?
 	path := "/Users/ssikdar1/go/src/github.com/rgdaddio/gobotics/gobotics-frontend/build/"
-	log.Fatal(http.ListenAndServe(":8080", staticFileHandler(http.FileServer(http.Dir(path)))))
+
+	client_api_server.Handle("/", staticFileHandler(http.FileServer(http.Dir(path))))
 
 	client_api_server.Handle("/client/die", http.HandlerFunc(die))
 	client_api_server.Handle("/client/device", http.HandlerFunc(device))
