@@ -6,13 +6,13 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"reflect"
 )
 
 //TODO add license
 //TODO Godocs?
 //TODO unit tests
-var db *sql.DB // global variable to share it between main and the HTTP handler
+var db *sql.DB
+
 //represents a connection pool, not a single connection
 
 func init_db(db *sql.DB) {
@@ -54,10 +54,6 @@ func Serve() {
 	client_api_server.Handle("/client/device", http.HandlerFunc(device))
 	client_api_server.Handle("/client/devices", http.HandlerFunc(devices))
 	client_api_server.Handle("/health", http.HandlerFunc(healthcheck))
-
-	httpMux := reflect.ValueOf(client_api_server).Elem()
-	finList := httpMux.FieldByIndex([]int{1})
-	fmt.Println(finList)
 
 	s := &http.Server{
 		Addr:    ":8080",
