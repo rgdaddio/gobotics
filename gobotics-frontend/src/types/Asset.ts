@@ -2,8 +2,8 @@ type Asset  = {
     [index: string]: string;
       id: string,
       name: string,
-      device_status: string,
-      location: string,
+      mac_address: string,
+      ip_address: string,
 }
 
 export default Asset;
