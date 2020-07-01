@@ -16,6 +16,14 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+type AssetProps = {
+    addAssetForm: Asset,
+    handleChange: (event: MouseEvent<HTMLFormElement>) => void,
+    onSubmit: (event: MouseEvent<HTMLButtonElement>) => void,
+    showAddAssetForm: boolean
+    assets: Array<Asset>
+}
+
 function ShowAddAssetForm(props: any) {
     const showForm = props.showAddAssetForm;
     console.log(props);
@@ -29,12 +37,8 @@ function ShowAddAssetForm(props: any) {
     }
     return null;
   }
-type AssetProps = {
-    addAssetForm: Asset,
-    handleChange: (event: MouseEvent<HTMLInputElement>) => void
-    onSubmit: (event: MouseEvent<HTMLButtonElement>) => void
-}
-function AssetForm(props: AssetProps)  {
+
+function AssetForm(props: any)  {
     const classes = useStyles();
     return(
         <div>
@@ -43,7 +47,7 @@ function AssetForm(props: AssetProps)  {
                     <TextField required id="assetName" name="name" label="Device Name" defaultValue="" autoComplete='off' value={props.addAssetForm.name} />   
                 </div>   
                 <div>
-                    <TextField required id="assetLocation" name="location" label="Location" defaultValue="" autoComplete='off' value={props.addAssetForm.location} />
+                    <TextField required id="assetLocation" name="ipaddr" label="IP Address" defaultValue="" autoComplete='off' value={props.addAssetForm.location} />
                     <Button  variant="contained" color="primary" onClick={props.onSubmit}>
                         Create Asset
                     </Button>

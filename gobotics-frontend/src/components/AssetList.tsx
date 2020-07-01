@@ -4,16 +4,15 @@ import Asset from "../types/Asset";
 import {Card, CardContent} from '@material-ui/core';
 
 function AssetCard(props: any) {
-    return (
+    return      (
         <Card variant="outlined">
         <CardContent>
             <h4>{props.asset.name}</h4>
-            <div>id: {props.asset.id}</div>
-            <div>Status: {props.asset.device_status} </div>
-            <div>Location: {props.asset.location} </div>
+            <div>Id: {props.asset.id}</div>
+            <div>IP Address: {props.asset.ip_address} </div>
+            <div>MAC Address: {props.asset.mac_address} </div>
         </CardContent>
-    </Card>
-        );
+    </Card>);
 }
 
 function AssetList(props: any) {

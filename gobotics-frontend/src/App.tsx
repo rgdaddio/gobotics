@@ -32,23 +32,30 @@ type AppState = {
 
 class App extends Component<AppProps, AppState>{
     constructor(props:AppProps) {
-        super(props)
+        super(props);
+        fetch('/client/devices').
+        then(res => res.json()).
+        then(list => {
+            const entries = list.map( (x: any) => ({
+                'id': x.name,
+                'name': x.name,
+                'mac_address': x.mac_address,
+                'ip_address': x.ip_address
+            }));
+            this.setState({assets: this.state.assets.concat(entries)})
+        })
         this.state = {
             'showAddAssetForm': false,
             'addAssetForm': {
-                'name': '',
-                'location': '',
                 'id' : '',
-                'device_status': 'down'
+                'name': '',
+                'ip_address': '',
+                'mac_address': ''
             },
-            assets: [
-                {'id': '001', 'name': 'Raspberry Pi', 'device_status': 'up', 'location': 'MIT'},
-                {'id': '002', 'name': 'Linksys Router', 'device_status': 'up', 'location': 'Harvard'},
-                {'id': '003', 'name': 'Linux Laptop', 'device_status': 'down', 'location': 'BU'},
-                {'id' : '004', 'name': 'Arduino', 'device_status': 'up', 'location': 'Binghamton'}
-            ]
+            assets: []
         }
     }
+
     handleAssetFormChange = (event : React.ChangeEvent<HTMLFormElement>) => {
         const addAssetFormState = this.state.addAssetForm;
         const { name, value } = event.target;
@@ -58,37 +65,21 @@ class App extends Component<AppProps, AppState>{
 
     onSubmit = (event: MouseEvent<HTMLButtonElement>) => {
         event.preventDefault();
-        if (this.state.addAssetForm.name == "" && this.state.addAssetForm.location == "")
+        if (this.state.addAssetForm.name == "" && this.state.addAssetForm.ip_address == "")
             return;
         else {
             const newAsset: Asset = {
               "id": String(Math.random()),
               "name": this.state.addAssetForm.name,
-              "location": this.state.addAssetForm.location,
-              "device_status": ""
+              "mac_address": this.state.addAssetForm.mac_address,
+              "ip_address": this.state.addAssetForm.ip_address
             };
             this.setState({
                 assets: this.state.assets.concat(newAsset),
                 // TODO ask rohan
-                addAssetForm: {name: "", location: "", device_status: "", id: ""}
+                addAssetForm: {name: "", id: "", ip_address: "", mac_address: ""}
             });
         }
-    }
-
-    createAsset = (event: MouseEvent<HTMLButtonElement>) => {
-        console.log(event)
-        console.log(this.state.assets)
-        fetch('https://api.github.com/repos/stedolan/jq/commits?per_page=2').
-            then(res => res.json()).
-            then(list => {
-                const entries = list.map( (x: any) => ({
-                    'id': x.sha,
-                    'name': x.commit.author.name,
-                    'device_status': 'unknown',
-                    'location': null
-                }));
-                this.setState({assets: this.state.assets.concat(entries)})
-            })
     }
 
     // bind click to some state variable 
@@ -109,7 +100,6 @@ class App extends Component<AppProps, AppState>{
 
                 <AssetList 
                     onSubmit={this.onSubmit}
-                    createAsset={this.createAsset}
                     assets={this.state.assets} 
                     />
             </div>
