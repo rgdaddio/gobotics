@@ -1,7 +1,8 @@
 import React from "react";
-import Asset from "../types/Asset";
-
+import Asset from "../ducks/assets/types";
 import {Card, CardContent} from '@material-ui/core';
+
+// Presentational Components
 
 function AssetCard(props: any) {
     return      (
@@ -29,5 +30,7 @@ function AssetList(props: any) {
         </React.Fragment>
     );
 }
+
+
 
 export default AssetList; 
