@@ -9,38 +9,11 @@ import { MouseEvent } from 'react';
 import { createStore } from 'redux';
 import assetApp from './ducks/assets/reducers';
 
-const store = createStore(assetApp)
-
-
-// todo super(props) ?
-
-
 // hey quick idea for your "showing data" thing that you might find useful
 //as a POF you could have a component that has both the vanilla card + info card stacked
 
-//TODO function components with state how in react
-// React State and props together 
+// TODO have a button that filters the asset list by type or ip address?
 
-//TODO remove all props:any
-// https://www.typescriptlang.org/docs/handbook/react.html
-// export interface Props {
-// https://stackoverflow.com/questions/52735288/why-does-parameter-props-implicitly-has-an-any-type
-//https://stackoverflow.com/questions/47561848/property-value-does-not-exist-on-type-readonly
-
-// TODO Ducks or domain style redux.js.org/faq/code-structure
-// https://react-redux.js.org/introduction/quick-start
-
-// ------ Redux
-// Store
-//const store = createStore(reducer);
-//console.log('initial state: ', store.getState());
-//store.subscribe(() => console.log('updated state: ', store.getState()));
-//store.dispatch(addAsset({id: "1", name: "1", mac_address:"", ip_address:"10.0.0.1"}))
-//store.dispatch(addAsset({id: "2", name: "2", mac_address:"", ip_address:"10.0.0.2"}))
-//store.dispatch(addAsset({id: "3", name: "3", mac_address:"", ip_address:"10.0.0.3"}))
-//store.dispatch(addAssets([{id: "4", name: "4", mac_address:"", ip_address:"10.0.0.4"}, {id: "5", name: "5", mac_address:"", ip_address:"10.0.0.5"}]))
-
-// -------- end redux
 type AppProps = {}
 
 type AppState = { 
