@@ -2,4 +2,5 @@
 //To represent chained operations you need a redux middleware to enhance the dispatch function. 
 //Some popular examples are: redux-thunk, redux-saga or redux-observable.
 
-// TODO use redux-thunk at somepoint.
+// TODO use redux-thunk at somepoint?
+import actions from "./actions";
