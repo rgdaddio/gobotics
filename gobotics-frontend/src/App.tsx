@@ -1,26 +1,18 @@
 import React, {Component} from "react";
 import AssetList from "./components/AssetList";
-import {ShowAddAssetForm, AssetForm} from "./components/AssetForm";
 import Asset from "./types/Asset";
+
+import {ShowAddAssetForm} from "./components/AssetForm";
 import Button from '@material-ui/core/Button';
 import { MouseEvent } from 'react';
 
-// todo super(props) ?
-
+import { createStore } from 'redux';
+import assetApp from './ducks/assets/reducers';
 
 // hey quick idea for your "showing data" thing that you might find useful
 //as a POF you could have a component that has both the vanilla card + info card stacked
 
-//TODO function components with state how in react
-// React State and props together 
-
-//TODO remove all props:any
-// https://www.typescriptlang.org/docs/handbook/react.html
-// export interface Props {
-// https://stackoverflow.com/questions/52735288/why-does-parameter-props-implicitly-has-an-any-type
-//https://stackoverflow.com/questions/47561848/property-value-does-not-exist-on-type-readonly
-
-
+// TODO have a button that filters the asset list by type or ip address?
 
 type AppProps = {}
 
@@ -76,7 +68,6 @@ class App extends Component<AppProps, AppState>{
             };
             this.setState({
                 assets: this.state.assets.concat(newAsset),
-                // TODO ask rohan
                 addAssetForm: {name: "", id: "", ip_address: "", mac_address: ""}
             });
         }
