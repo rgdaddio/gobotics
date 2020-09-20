@@ -6,13 +6,19 @@ default: all
 all: gobotics
 
 build_server:
-	go build -o gobotics_server -work -x cmd/server/*
+	go build -o bin/gobotics_server -work -x cmd/server/*
 
 build_client:
-	go build -o gobotics_client -work -x cmd/client/*
+	go build -o bin/gobotics_client -work -x cmd/client/*
+
+go_test:
+	go test ./...
 
 gobotics: gobotics.go
+	go mod tidy
 
+	go mod vendor
+	
 	$(BUILDER) get -u github.com/mattn/go-sqlite3
 
 	$(BUILDER) get -u -d gobot.io/x/gobot/...

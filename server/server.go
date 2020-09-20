@@ -13,6 +13,11 @@ import (
 //TODO unit tests
 var db *sql.DB
 
+// ServerMsg - default return message for all endpoints
+type ServerMsg struct {
+	Message string `json:"message"`
+}
+
 //represents a connection pool, not a single connection
 
 func init_db(db *sql.DB) {
@@ -53,7 +58,7 @@ func Serve() {
 	client_api_server.Handle("/client/die", http.HandlerFunc(die))
 	client_api_server.Handle("/client/device", http.HandlerFunc(device))
 	client_api_server.Handle("/client/devices", http.HandlerFunc(devices))
-	client_api_server.Handle("/health", http.HandlerFunc(healthcheck))
+	client_api_server.Handle("/healthcheck", http.HandlerFunc(HealthCheckHandler))
 
 	s := &http.Server{
 		Addr:    ":8080",
