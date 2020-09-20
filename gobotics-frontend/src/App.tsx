@@ -14,6 +14,8 @@ import assetApp from './ducks/assets/reducers';
 
 // TODO have a button that filters the asset list by type or ip address?
 
+// TODO Login page
+
 type AppProps = {}
 
 type AppState = { 

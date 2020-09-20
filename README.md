@@ -21,6 +21,13 @@ Pending:
 
 
 #TODO
+* Testing in Go
+* Testing in React
+* change DB to postgres/msql do database pooling
+
+* Docker
+
+* goroutines, channels and multithreading
 * go mod
 * serve react app
 

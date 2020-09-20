@@ -1,9 +1,4 @@
 # gobotics-frontend
-
-A React Frontend for the Gobotics web portal.
-
-If this were a real project this probably would be in its own github repo.
-
 A proof of concept frontend / portal for gobotics to help learn about React/Redux.
 `gobotics-frontend` usees the React framework and Redux for statemanagment. 
 
@@ -22,11 +17,3 @@ For redux, the frontend uses the `ducks` for of file organization.
 Articles used for reference are: 
 * https://www.freecodecamp.org/news/scaling-your-redux-app-with-ducks-6115955638be/
 * https://github.com/FortechRomania/react-redux-complete-example
-
-# TODO
-#TODO
-
-Redux?
-Ducks?
-Testing:
-Mocha? Jasmnine? Jest?

@@ -1,20 +1,9 @@
 import React from "react";
+
+// TODO is this okay?
 import Asset from "../ducks/assets/types";
-import {Card, CardContent} from '@material-ui/core';
 
-// Presentational Components
-
-function AssetCard(props: any) {
-    return      (
-        <Card variant="outlined">
-        <CardContent>
-            <h4>{props.asset.name}</h4>
-            <div>Id: {props.asset.id}</div>
-            <div>IP Address: {props.asset.ip_address} </div>
-            <div>MAC Address: {props.asset.mac_address} </div>
-        </CardContent>
-    </Card>);
-}
+import AssetCard from './AssetCard';
 
 function AssetList(props: any) {
     return (
