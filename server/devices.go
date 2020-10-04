@@ -22,9 +22,8 @@ type Device struct {
 
 type Devices []Device
 
-func add_client_device(db *sql.DB, new_device Device) {
-	log.Println(new_device)
-	log.Println("shshshshsh")
+// struct methods?
+func addClientDevice(db *sql.DB, new_device Device) {
 	stmt, err := db.Prepare("INSERT INTO client_devices( " +
 		" name, platform, mac_address, ip_address " +
 		" ) values(?,?,?,?)")
@@ -37,9 +36,7 @@ func add_client_device(db *sql.DB, new_device Device) {
 	}
 }
 
-func update_client_device(db *sql.DB, device Device) {
-	fmt.Println(device)
-	fmt.Println(device.Mac)
+func updateClientDevice(db *sql.DB, device Device) {
 
 	stmt, err := db.Prepare("UPDATE client_devices SET  " +
 		" mac_address = ?,  ip_address = ? " +
@@ -56,10 +53,10 @@ func update_client_device(db *sql.DB, device Device) {
 	log.Println(affect)
 }
 
-func find_client_device(db *sql.DB, device_name string) Device {
+func findClientDevice(db *sql.DB, device_name string) (Device, error) {
 	rows, err := db.Query("SELECT * from client_devices WHERE name = ?", device_name)
 	if err != nil {
-		log.Fatal(err)
+		return Device{}, err
 	}
 	defer rows.Close()
 
@@ -78,10 +75,10 @@ func find_client_device(db *sql.DB, device_name string) Device {
 		}
 		log.Println(device)
 	}
-	return device
+	return device, err
 }
 
-func get_client_devices(db *sql.DB) Devices {
+func getClientDevices(db *sql.DB) Devices {
 	rows, err := db.Query("SELECT name, platform, mac_address, ip_address from client_devices")
 	if err != nil {
 		log.Fatal(err)
@@ -131,16 +128,16 @@ func remove_client_device(db *sql.DB, device_name string) int64 {
                 200:
                     description: list of all devices being managed
 ***/
-func devices(w http.ResponseWriter, req *http.Request) {
+func DevicesHandler(w http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case "GET":
 		// List information on all devices
-		devices := get_client_devices(db)
+		devices := getClientDevices(db)
 		json.NewEncoder(w).Encode(devices)
 
 	default:
 		// Give an error message.
-		msg := ServerMsg{Message: "Only GET supported for this api"}
+		msg := ServerMsg{Message: "HTTP Method not supported"}
 		json.NewEncoder(w).Encode(msg)
 	}
 }
@@ -191,31 +188,32 @@ func die(w http.ResponseWriter, req *http.Request) {
                 200:
                     description: device removed
 ***/
-func device(w http.ResponseWriter, req *http.Request) {
+func DeviceHandler(w http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case "GET":
 		// List information on a specific device
 		log.Println(req.RequestURI)
 		url_par, _ := url.Parse(req.RequestURI)
 		qmap, _ := url.ParseQuery(url_par.RawQuery)
-		ret := find_client_device(db, qmap["device"][0])
+		// if no device throw 404
+		ret, err := findClientDevice(db, qmap["device"][0])
+		if err != nil {
+
+		}
+
 		json.NewEncoder(w).Encode(ret)
 	case "POST":
 		// Add a new device.
 		new_device := Device{}
 		decoder := json.NewDecoder(req.Body)
 		decoder.Decode(&new_device)
-		log.Println("before putting into db")
-		log.Println(new_device)
-		add_client_device(db, new_device)
-		log.Println("after putting into db")
+		addClientDevice(db, new_device)
 
 	case "PUT":
 		// Update an existing record.
 		new_device := Device{}
 		decoder := json.NewDecoder(req.Body)
 		decoder.Decode(&new_device)
-		log.Println(new_device)
 		if (Device{}) == new_device {
 			msg := ServerMsg{Message: "Please give information for update"}
 			json.NewEncoder(w).Encode(msg)
@@ -231,7 +229,7 @@ func device(w http.ResponseWriter, req *http.Request) {
 			json.NewEncoder(w).Encode(msg)
 		}
 
-		update_client_device(db, new_device)
+		updateClientDevice(db, new_device)
 
 	case "DELETE":
 		// Remove the record.
