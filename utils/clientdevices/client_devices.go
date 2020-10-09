@@ -1,4 +1,4 @@
-package client_devices
+package clientdevices
 
 // Device represents a single IoT Device or Asset in the field
 type Device struct {
@@ -12,9 +12,8 @@ type Device struct {
 // Devices - a list of multiple devices
 type Devices []Device
 
-// ClientDeviceLib interface to interacting with IoT Devices
-type ClientDevicesLib interface {
-	NewClient()
+// ClientDevice interface to interacting with IoT Devices
+type ClientDevices interface {
 	AddDevice(newDevice Device) error
 	UpdateDevice(device Device) error
 	FindDeviceByName(name string) (Device, error)

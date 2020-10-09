@@ -1,4 +1,4 @@
-package client_devices
+package clientdevices
 
 import (
 	"database/sql"
@@ -8,8 +8,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-//SqlLiteDevicesLib implements the ClientDeviceLib interface
-type SqlLiteDevicesLib struct {
+//SqlLiteDevicesLib implements the ClientDevice interface
+type SqlLiteDevices struct {
 	db *sql.DB
 }
 
@@ -21,8 +21,8 @@ func init_db(db *sql.DB) error {
 }
 
 // NewClient will initialize the Database and return the client
-func NewClient() (*SqlLiteDevicesLib, error) {
-	sldl := SqlLiteDevicesLib{}
+func NewSqlLiteClient() (ClientDevices, error) {
+	sldl := SqlLiteDevices{}
 
 	db, err := sql.Open("sqlite3", "./foo.db")
 	if err != nil {
@@ -47,7 +47,7 @@ func NewClient() (*SqlLiteDevicesLib, error) {
 }
 
 // AddDevice - Insert into table
-func (s *SqlLiteDevicesLib) AddDevice(newDevice Device) error {
+func (s *SqlLiteDevices) AddDevice(newDevice Device) error {
 	stmt, err := s.db.Prepare("INSERT INTO client_devices( " +
 		" name, platform, mac_address, ip_address " +
 		" ) values(?,?,?,?)")
@@ -64,7 +64,7 @@ func (s *SqlLiteDevicesLib) AddDevice(newDevice Device) error {
 }
 
 // UpdateDevice - update information on a specific device
-func (s *SqlLiteDevicesLib) UpdateDevice(device Device) error {
+func (s *SqlLiteDevices) UpdateDevice(device Device) error {
 
 	stmt, err := s.db.Prepare("UPDATE client_devices SET  " +
 		" mac_address = ?,  ip_address = ? " +
@@ -81,7 +81,7 @@ func (s *SqlLiteDevicesLib) UpdateDevice(device Device) error {
 }
 
 // FindDeviceByName - find a device by its nickname
-func (s *SqlLiteDevicesLib) FindDeviceByName(device_name string) (Device, error) {
+func (s *SqlLiteDevices) FindDeviceByName(device_name string) (Device, error) {
 	rows, err := s.db.Query("SELECT * from client_devices WHERE name = ?", device_name)
 	defer rows.Close()
 
@@ -100,8 +100,8 @@ func (s *SqlLiteDevicesLib) FindDeviceByName(device_name string) (Device, error)
 }
 
 // RemoveDeviceByName - remove device given its nickname
-func RemoveDeviceByName(db *sql.DB, device_name string) error {
-	stmt, err := db.Prepare("DELETE FROM client_devices WHERE name = ?")
+func (s *SqlLiteDevices) RemoveDeviceByName(device_name string) error {
+	stmt, err := s.db.Prepare("DELETE FROM client_devices WHERE name = ?")
 	if err != nil {
 		return err
 	}
@@ -114,10 +114,10 @@ func RemoveDeviceByName(db *sql.DB, device_name string) error {
 }
 
 // GetAllDevices - get all registered devices
-func (s *SqlLiteDevicesLib) GetAllDevices(db *sql.DB) (Devices, error) {
+func (s *SqlLiteDevices) GetAllDevices() (Devices, error) {
 	devices := Devices{}
 
-	rows, err := db.Query("SELECT name, platform, mac_address, ip_address from client_devices")
+	rows, err := s.db.Query("SELECT name, platform, mac_address, ip_address from client_devices")
 	defer rows.Close()
 
 	if err != nil {
