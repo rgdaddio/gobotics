@@ -11,12 +11,14 @@ import (
 )
 
 func TestHealthCheckHandler(t *testing.T) {
+
+	s := main.Server{}
 	req, err := http.NewRequest("GET", "/healthcheck", nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(main.HealthCheckHandler)
+	handler := http.HandlerFunc(s.HealthCheckHandler)
 
 	handler.ServeHTTP(rr, req)
 	status := rr.Code

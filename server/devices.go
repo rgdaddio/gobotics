@@ -33,7 +33,7 @@ func (s *Server) DevicesHandler(w http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case "GET":
 		// List information on all devices
-		devices, err := s.deivcesClient.GetAllDevices()
+		devices, err := s.DeivcesClient.GetAllDevices()
 		if err != nil {
 			statusCode = http.StatusInternalServerError
 			msg = ServerMsg{Message: "Error getting devices"}
@@ -100,7 +100,7 @@ func (s *Server) DeviceHandler(w http.ResponseWriter, req *http.Request) {
 		// List information on a specific device
 		urlPar, _ := url.Parse(req.RequestURI)
 		qmap, _ := url.ParseQuery(urlPar.RawQuery)
-		ret, err := s.deivcesClient.FindDeviceByName(qmap["device"][0])
+		ret, err := s.DeivcesClient.FindDeviceByName(qmap["device"][0])
 		if err != nil {
 			statusCode = http.StatusAccepted
 			msg = ServerMsg{Message: "Device not found"}
@@ -114,10 +114,10 @@ func (s *Server) DeviceHandler(w http.ResponseWriter, req *http.Request) {
 
 		if err != nil {
 			statusCode = http.StatusBadRequest
-			msg = ServerMsg{Message: fmt.Sprintf("Error decoding json: %", err)}
+			msg = ServerMsg{Message: fmt.Sprintf("Error decoding json: %s", err)}
 			return
 		}
-		err = s.deivcesClient.AddDevice(newDevice)
+		err = s.DeivcesClient.AddDevice(newDevice)
 		if err != nil {
 			statusCode = http.StatusInternalServerError
 			log.WithFields(log.Fields{"new_device": newDevice}).Error("Error adding new device")
@@ -130,7 +130,7 @@ func (s *Server) DeviceHandler(w http.ResponseWriter, req *http.Request) {
 		newDevice, err := clientdevices.JsonReq2Device(req)
 		if err != nil {
 			statusCode = http.StatusBadRequest
-			msg = ServerMsg{Message: fmt.Sprintf("Error decoding json: %", err)}
+			msg = ServerMsg{Message: fmt.Sprintf("Error decoding json: %s", err)}
 			return
 		}
 
@@ -139,7 +139,7 @@ func (s *Server) DeviceHandler(w http.ResponseWriter, req *http.Request) {
 			statusCode = http.StatusBadRequest
 			return
 		}
-		err = s.deivcesClient.UpdateDevice(newDevice)
+		err = s.DeivcesClient.UpdateDevice(newDevice)
 		if err != nil {
 			statusCode = http.StatusInternalServerError
 			log.WithFields(log.Fields{"new_device": newDevice}).Error("Error updating device")
@@ -151,7 +151,7 @@ func (s *Server) DeviceHandler(w http.ResponseWriter, req *http.Request) {
 		// Remove the record.
 		urlPar, _ := url.Parse(req.RequestURI)
 		qmap, _ := url.ParseQuery(urlPar.RawQuery)
-		err := s.deivcesClient.RemoveDeviceByName(qmap["device"][0])
+		err := s.DeivcesClient.RemoveDeviceByName(qmap["device"][0])
 
 		if err != nil {
 			statusCode = http.StatusBadRequest

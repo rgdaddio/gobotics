@@ -7,19 +7,25 @@ import (
 	"testing"
 
 	main "github.com/rgdaddio/gobotics/server"
+	mock "github.com/rgdaddio/gobotics/utils/clientdevices/mock"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDevicesHandler(t *testing.T) {
 
-	endpoint_uri := "/client/devices"
+	s := main.Server{}
+	dc, _ := mock.NewMockClient()
+	s.DeivcesClient = dc
+	serverHandlerFunc := s.DevicesHandler
 
-	req, err := http.NewRequest("GET", endpoint_uri, nil)
+	endpointUri := "/client/devices"
+
+	req, err := http.NewRequest("GET", endpointUri, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(main.DevicesHandler)
+	handler := http.HandlerFunc(serverHandlerFunc)
 
 	handler.ServeHTTP(rr, req)
 	status := rr.Code
@@ -27,12 +33,12 @@ func TestDevicesHandler(t *testing.T) {
 	assert.Equal(t, `{"message":"live"}`, strings.TrimSuffix(rr.Body.String(), "\n"))
 
 	// TODO Unsported method
-	req, err = http.NewRequest("PUT", endpoint_uri, nil)
+	req, err = http.NewRequest("PUT", endpointUri, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	rr = httptest.NewRecorder()
-	handler = http.HandlerFunc(main.DevicesHandler)
+	handler = http.HandlerFunc(serverHandlerFunc)
 
 	handler.ServeHTTP(rr, req)
 	status = rr.Code

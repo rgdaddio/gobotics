@@ -20,20 +20,27 @@ func initDB(db *sql.DB) error {
 	return err
 }
 
-type sqliteParams struct {
+type SqlLiteOptions struct {
 	databaseName string
 }
 
+func NewSqlLiteDefaultOptions() SqlLiteOptions {
+	return SqlLiteOptions{
+		databaseName: "devices",
+	}
+}
+
 // NewClient will initialize the Database and return the client
-func NewSqlLiteClient(params sqliteParams) (ClientDevices, error) {
+func NewSqlLiteClient(options SqlLiteOptions) (ClientDevices, error) {
 	sldl := SqlLiteDevices{}
 
-	db, err := sql.Open("sqlite3", params.databaseName)
+	db, err := sql.Open("sqlite3", options.databaseName)
 	if err != nil {
 		return nil, err
 	}
 
 	//db.SetMaxIdleConns(50)
+
 	err = db.Ping() // make sure the database conn is alive
 	if err != nil {
 		return nil, err

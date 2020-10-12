@@ -15,7 +15,7 @@ type ServerMsg struct {
 }
 
 type Server struct {
-	deivcesClient clientdevices.ClientDevices
+	DeivcesClient clientdevices.ClientDevices
 }
 
 /***
@@ -38,11 +38,13 @@ func Serve() {
 	log.Info("Starting HTTP Server")
 
 	s := Server{}
-	devicesClient, err := clientdevices.NewSqlLiteClient({ databaseName: "foo.db"})
+
+	sqlliteOptions := clientdevices.NewSqlLiteDefaultOptions()
+	devicesClient, err := clientdevices.NewSqlLiteClient(sqlliteOptions)
 	if err != nil {
 		log.Fatal("Error instantiating devicesClient")
 	}
-	s.deivcesClient = devicesClient
+	s.DeivcesClient = devicesClient
 
 	client_api_server := http.NewServeMux()
 
