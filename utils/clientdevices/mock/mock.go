@@ -24,23 +24,26 @@ func (m *MockClient) AddDevice(newDevice clientdevices.Device) error {
 }
 
 func (m *MockClient) UpdateDevice(device clientdevices.Device) error {
-	m.devices[device.Name] = device
-	return nil
-}
-
-func (m *MockClient) FindDeviceByName(device_name string) (clientdevices.Device, error) {
-	if device, ok := m.devices[device_name]; ok {
-		return device, nil
-	}
-	return clientdevices.Device{}, fmt.Errorf("Device %s not found", device_name)
-}
-
-func (m *MockClient) RemoveDeviceByName(device_name string) error {
-	if _, ok := m.devices[device_name]; ok {
-		delete(m.devices, device_name)
+	if device, ok := m.devices[device.Name]; ok {
+		m.devices[device.Name] = device
 		return nil
 	}
-	return fmt.Errorf("Device %s not found", device_name)
+	return fmt.Errorf("Device %s not found", device.Name)
+}
+
+func (m *MockClient) FindDeviceByName(deviceName string) (clientdevices.Device, error) {
+	if device, ok := m.devices[deviceName]; ok {
+		return device, nil
+	}
+	return clientdevices.Device{}, fmt.Errorf("Device %s not found", deviceName)
+}
+
+func (m *MockClient) RemoveDeviceByName(deviceName string) error {
+	if _, ok := m.devices[deviceName]; ok {
+		delete(m.devices, deviceName)
+		return nil
+	}
+	return fmt.Errorf("Device %s not found", deviceName)
 }
 
 func (m *MockClient) GetAllDevices() (clientdevices.Devices, error) {

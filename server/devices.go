@@ -2,10 +2,12 @@ package server
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
 	"net/http"
 	"net/url"
-	"os"
+
+	"github.com/rgdaddio/gobotics/utils/clientdevices"
+	log "github.com/sirupsen/logrus"
 )
 
 /***
@@ -16,11 +18,28 @@ import (
                 200:
                     description: list of all devices being managed
 ***/
-func DevicesHandler(w http.ResponseWriter, req *http.Request) {
+func (s *Server) DevicesHandler(w http.ResponseWriter, req *http.Request) {
+
+	var msg ServerMsg
+	var statusCode int
+
+	defer func() {
+		// Write response
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(statusCode)
+		json.NewEncoder(w).Encode(msg)
+	}()
+
 	switch req.Method {
 	case "GET":
 		// List information on all devices
-		devices := getClientDevices(db)
+		devices, err := s.deivcesClient.GetAllDevices()
+		if err != nil {
+			statusCode = http.StatusInternalServerError
+			msg = ServerMsg{Message: "Error getting devices"}
+			log.Error("Error getting devices")
+			return
+		}
 		json.NewEncoder(w).Encode(devices)
 
 	default:
@@ -28,18 +47,6 @@ func DevicesHandler(w http.ResponseWriter, req *http.Request) {
 		msg := ServerMsg{Message: "HTTP Method not supported"}
 		json.NewEncoder(w).Encode(msg)
 	}
-}
-
-/***
-    URI: /client/die
-     do a sys exit
-***/
-func die(w http.ResponseWriter, req *http.Request) {
-	log.Printf(req.Method)
-	log.Printf(req.URL.Path)
-	msg := ServerMsg{Message: "killing daemon...."}
-	json.NewEncoder(w).Encode(msg)
-	os.Exit(1)
 }
 
 /***
@@ -76,7 +83,7 @@ func die(w http.ResponseWriter, req *http.Request) {
                 200:
                     description: device removed
 ***/
-func DeviceHandler(w http.ResponseWriter, req *http.Request) {
+func (s *Server) DeviceHandler(w http.ResponseWriter, req *http.Request) {
 
 	var msg ServerMsg
 	var statusCode int
@@ -91,59 +98,68 @@ func DeviceHandler(w http.ResponseWriter, req *http.Request) {
 	switch req.Method {
 	case "GET":
 		// List information on a specific device
-		log.Println(req.RequestURI)
-		url_par, _ := url.Parse(req.RequestURI)
-		qmap, _ := url.ParseQuery(url_par.RawQuery)
-		// if no device throw 404
-		ret, err := findClientDevice(db, qmap["device"][0])
+		urlPar, _ := url.Parse(req.RequestURI)
+		qmap, _ := url.ParseQuery(urlPar.RawQuery)
+		ret, err := s.deivcesClient.FindDeviceByName(qmap["device"][0])
 		if err != nil {
-			// TODO Accepted, No content, or 404?
+			statusCode = http.StatusAccepted
 			msg = ServerMsg{Message: "Device not found"}
 			return
 		}
-
+		statusCode = http.StatusOK
 		json.NewEncoder(w).Encode(ret)
 	case "POST":
 		// Add a new device.
-		new_device := Device{}
-		decoder := json.NewDecoder(req.Body)
-		decoder.Decode(&new_device)
-		addClientDevice(db, new_device)
+		newDevice, err := clientdevices.JsonReq2Device(req)
 
+		if err != nil {
+			statusCode = http.StatusBadRequest
+			msg = ServerMsg{Message: fmt.Sprintf("Error decoding json: %", err)}
+			return
+		}
+		err = s.deivcesClient.AddDevice(newDevice)
+		if err != nil {
+			statusCode = http.StatusInternalServerError
+			log.WithFields(log.Fields{"new_device": newDevice}).Error("Error adding new device")
+			return
+		}
+		statusCode = http.StatusOK
+		msg = ServerMsg{Message: "Adding new device successful"}
 	case "PUT":
 		// Update an existing record.
-		new_device := Device{}
-		decoder := json.NewDecoder(req.Body)
-		decoder.Decode(&new_device)
-
-		if (Device{}) == new_device {
-			msg = ServerMsg{Message: "Device information missing in body of request"}
+		newDevice, err := clientdevices.JsonReq2Device(req)
+		if err != nil {
 			statusCode = http.StatusBadRequest
+			msg = ServerMsg{Message: fmt.Sprintf("Error decoding json: %", err)}
 			return
 		}
 
-		if new_device.Name == "" {
+		if newDevice.Name == "" {
 			msg = ServerMsg{Message: "You must specify name when trying to update device"}
 			statusCode = http.StatusBadRequest
 			return
 		}
-
-		if new_device.Platform == "" && new_device.Mac == "" && new_device.Ip == "" {
-			msg = ServerMsg{Message: "Please give information for update"}
+		err = s.deivcesClient.UpdateDevice(newDevice)
+		if err != nil {
+			statusCode = http.StatusInternalServerError
+			log.WithFields(log.Fields{"new_device": newDevice}).Error("Error updating device")
+			return
 		}
-
-		updateClientDevice(db, new_device)
-
+		statusCode = http.StatusOK
+		msg = ServerMsg{Message: "Update successful"}
 	case "DELETE":
 		// Remove the record.
-		url_par, _ := url.Parse(req.RequestURI)
-		qmap, _ := url.ParseQuery(url_par.RawQuery)
-		ret := remove_client_device(db, qmap["device"][0])
-		if ret > 0 {
-			msg = ServerMsg{Message: "Device Removed"}
-		} else {
-			msg = ServerMsg{Message: "Device name not found"}
+		urlPar, _ := url.Parse(req.RequestURI)
+		qmap, _ := url.ParseQuery(urlPar.RawQuery)
+		err := s.deivcesClient.RemoveDeviceByName(qmap["device"][0])
+
+		if err != nil {
+			statusCode = http.StatusBadRequest
+			msg = ServerMsg{Message: fmt.Sprintf("Couldn't Delete device: %s", qmap["device"][0])}
+			return
 		}
+		statusCode = http.StatusOK
+		msg = ServerMsg{Message: "Delete successful"}
 	default:
 		msg = ServerMsg{Message: "HTTP Method not supported"}
 		statusCode = http.StatusMethodNotAllowed

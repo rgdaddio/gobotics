@@ -13,18 +13,22 @@ type SqlLiteDevices struct {
 	db *sql.DB
 }
 
-func init_db(db *sql.DB) error {
+func initDB(db *sql.DB) error {
 	stmt, _ := db.Prepare("create table if not exists client_devices( " +
 		" name text, platform text, mac_address text, ip_address varchar(15), stats_table text);")
 	_, err := stmt.Exec()
 	return err
 }
 
+type sqliteParams struct {
+	databaseName string
+}
+
 // NewClient will initialize the Database and return the client
-func NewSqlLiteClient() (ClientDevices, error) {
+func NewSqlLiteClient(params sqliteParams) (ClientDevices, error) {
 	sldl := SqlLiteDevices{}
 
-	db, err := sql.Open("sqlite3", "./foo.db")
+	db, err := sql.Open("sqlite3", params.databaseName)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +39,7 @@ func NewSqlLiteClient() (ClientDevices, error) {
 		return nil, err
 	}
 
-	err = init_db(db)
+	err = initDB(db)
 	if err != nil {
 		return nil, err
 	}

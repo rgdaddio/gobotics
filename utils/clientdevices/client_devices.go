@@ -1,5 +1,10 @@
 package clientdevices
 
+import (
+	"encoding/json"
+	"net/http"
+)
+
 // Device represents a single IoT Device or Asset in the field
 type Device struct {
 	Name     string `json:"name"`
@@ -19,4 +24,11 @@ type ClientDevices interface {
 	FindDeviceByName(name string) (Device, error)
 	RemoveDeviceByName(name string) error
 	GetAllDevices() (Devices, error)
+}
+
+func JsonReq2Device(req *http.Request) (Device, error) {
+	device := Device{}
+	decoder := json.NewDecoder(req.Body)
+	err := decoder.Decode(&device)
+	return device, err
 }
