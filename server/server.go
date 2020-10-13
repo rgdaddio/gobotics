@@ -1,72 +1,72 @@
 package server
 
 import (
-	"database/sql"
-	"fmt"
-	"log"
+	"encoding/json"
 	"net/http"
 	"os"
-)
 
-//TODO add license
-//TODO Godocs?
-//TODO unit tests
-var db *sql.DB
+	"github.com/rgdaddio/gobotics/utils/clientdevices"
+	log "github.com/sirupsen/logrus"
+)
 
 // ServerMsg - default return message for all endpoints
 type ServerMsg struct {
 	Message string `json:"message"`
 }
 
-//represents a connection pool, not a single connection
+type Server struct {
+	DeivcesClient clientdevices.ClientDevices
+}
 
-func init_db(db *sql.DB) {
-	stmt, _ := db.Prepare("create table if not exists client_devices( " +
-		" name text, platform text, mac_address text, ip_address varchar(15), stats_table text);")
-	_, err := stmt.Exec()
-	if err != nil {
-		panic(err)
-	}
+/***
+    URI: /client/die
+     do a sys exit
+***/
+func (s *Server) die(w http.ResponseWriter, req *http.Request) {
+	log.Printf(req.Method)
+	log.Printf(req.URL.Path)
+	msg := ServerMsg{Message: "killing daemon...."}
+	json.NewEncoder(w).Encode(msg)
+	os.Exit(1)
 }
 
 func Serve() {
+
 	log.SetOutput(os.Stdout)
+	//log.SetFormatter(&log.JSONFormatter{})
 
-	var err error
-	db, err = sql.Open("sqlite3", "./foo.db")
-	//db.SetMaxIdleConns(50)
-	fmt.Printf("%#v\n", db)
+	log.Info("Starting HTTP Server")
 
-	err = db.Ping() // make sure the database conn is alive
+	s := Server{}
+
+	sqlliteOptions := clientdevices.NewSqlLiteDefaultOptions()
+	devicesClient, err := clientdevices.NewSqlLiteClient(sqlliteOptions)
 	if err != nil {
-		log.Fatalf("Error on opening database connection: %s", err.Error())
+		log.Fatal("Error instantiating devicesClient")
 	}
-	init_db(db)
-
-	//TODO: Maybe use Gorilla Mux ot GIN? Docker uses mux
+	s.DeivcesClient = devicesClient
 
 	client_api_server := http.NewServeMux()
 
 	//TODO add discovery
 
 	// React App
-	// TODO if this were a real app: serve with NGINX?
 	path := "/Users/ssikdar1/go/src/github.com/rgdaddio/gobotics/gobotics-frontend/build/"
 
-	client_api_server.Handle("/", staticFileHandler(http.FileServer(http.Dir(path))))
+	client_api_server.Handle("/", s.staticFileHandler(http.FileServer(http.Dir(path))))
 
-	client_api_server.Handle("/client/die", http.HandlerFunc(die))
-	client_api_server.Handle("/client/device", http.HandlerFunc(device))
-	client_api_server.Handle("/client/devices", http.HandlerFunc(devices))
-	client_api_server.Handle("/healthcheck", http.HandlerFunc(HealthCheckHandler))
+	client_api_server.Handle("/die", http.HandlerFunc(s.die))
+	client_api_server.Handle("/client/device", http.HandlerFunc(s.DeviceHandler))
+	client_api_server.Handle("/client/devices", http.HandlerFunc(s.DevicesHandler))
+	client_api_server.Handle("/healthcheck", http.HandlerFunc(s.HealthCheckHandler))
 
-	s := &http.Server{
+	httpServer := &http.Server{
 		Addr:    ":8080",
 		Handler: client_api_server,
 	}
 
 	//log.Fatal(s.ListenAndServeTLS("cert.pem", "key.pem"))
 	// Debugging purposes
-	log.Fatal(s.ListenAndServe())
+	log.Fatal(httpServer.ListenAndServe())
 
 }

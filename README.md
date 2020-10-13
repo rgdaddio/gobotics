@@ -21,8 +21,6 @@ Pending:
 
 
 #TODO
-* go mod
-* serve react app
 
 * ssl
 * jwt cookie

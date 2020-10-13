@@ -7,7 +7,7 @@ import (
 )
 
 // TODO test the headers are correct
-func staticFileHandler(h http.Handler) http.Handler {
+func (s *Server) staticFileHandler(h http.Handler) http.Handler {
 	// https://create-react-app.dev/docs/production-build
 	fn := func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(r.URL.Path)

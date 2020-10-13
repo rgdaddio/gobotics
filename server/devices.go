@@ -1,127 +1,14 @@
 package server
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
-	"os"
 
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/rgdaddio/gobotics/utils/clientdevices"
+	log "github.com/sirupsen/logrus"
 )
-
-type Device struct {
-	Name     string `json:"name"`
-	Platform string `json:"platform"`
-	Mac      string `json:"mac_address"`
-	Ip       string `json:"ip_address"`
-	//  Uptime time.Time `json:"uptime"`
-}
-
-type Devices []Device
-
-func add_client_device(db *sql.DB, new_device Device) {
-	log.Println(new_device)
-	log.Println("shshshshsh")
-	stmt, err := db.Prepare("INSERT INTO client_devices( " +
-		" name, platform, mac_address, ip_address " +
-		" ) values(?,?,?,?)")
-	if err != nil {
-		panic(err)
-	}
-	_, err2 := stmt.Exec(new_device.Name, new_device.Platform, new_device.Mac, new_device.Ip)
-	if err2 != nil {
-		panic(err)
-	}
-}
-
-func update_client_device(db *sql.DB, device Device) {
-	fmt.Println(device)
-	fmt.Println(device.Mac)
-
-	stmt, err := db.Prepare("UPDATE client_devices SET  " +
-		" mac_address = ?,  ip_address = ? " +
-		" WHERE name = ?")
-	if err != nil {
-		fmt.Println("HI")
-		panic(err)
-	}
-	res, err := stmt.Exec(device.Mac, device.Ip, device.Name)
-	if err != nil {
-		panic(err)
-	}
-	affect, _ := res.RowsAffected()
-	log.Println(affect)
-}
-
-func find_client_device(db *sql.DB, device_name string) Device {
-	rows, err := db.Query("SELECT * from client_devices WHERE name = ?", device_name)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-
-	device := Device{}
-	var name string
-	var platform string
-	var mac_address string
-	var ip_address string
-	if rows.Next() {
-		rows.Scan(&name, &platform, &mac_address, &ip_address)
-		device = Device{
-			Name:     name,
-			Platform: platform,
-			Mac:      mac_address,
-			Ip:       ip_address,
-		}
-		log.Println(device)
-	}
-	return device
-}
-
-func get_client_devices(db *sql.DB) Devices {
-	rows, err := db.Query("SELECT name, platform, mac_address, ip_address from client_devices")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer rows.Close()
-
-	devices := Devices{}
-	for rows.Next() {
-		device := Device{}
-		var name string
-		var platform string
-		var mac_address string
-		var ip_address string
-
-		rows.Scan(&name, &platform, &mac_address, &ip_address)
-		log.Println(rows)
-		log.Println(name)
-		device = Device{
-			Name:     name,
-			Platform: platform,
-			Mac:      mac_address,
-			Ip:       ip_address,
-		}
-		devices = append(devices, device)
-	}
-	return devices
-}
-
-func remove_client_device(db *sql.DB, device_name string) int64 {
-	stmt, err := db.Prepare("DELETE FROM client_devices WHERE name = ?")
-	if err != nil {
-		panic(err)
-	}
-	res, err := stmt.Exec(device_name)
-	if err != nil {
-		panic(err)
-	}
-	affect, _ := res.RowsAffected()
-	return affect
-}
 
 /***
     URI: /client/devices
@@ -131,30 +18,35 @@ func remove_client_device(db *sql.DB, device_name string) int64 {
                 200:
                     description: list of all devices being managed
 ***/
-func devices(w http.ResponseWriter, req *http.Request) {
+func (s *Server) DevicesHandler(w http.ResponseWriter, req *http.Request) {
+
+	var msg ServerMsg
+	var statusCode int
+
+	defer func() {
+		// Write response
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(statusCode)
+		json.NewEncoder(w).Encode(msg)
+	}()
+
 	switch req.Method {
 	case "GET":
 		// List information on all devices
-		devices := get_client_devices(db)
+		devices, err := s.DeivcesClient.GetAllDevices()
+		if err != nil {
+			statusCode = http.StatusInternalServerError
+			msg = ServerMsg{Message: "Error getting devices"}
+			log.Error("Error getting devices")
+			return
+		}
 		json.NewEncoder(w).Encode(devices)
 
 	default:
 		// Give an error message.
-		msg := ServerMsg{Message: "Only GET supported for this api"}
+		msg := ServerMsg{Message: "HTTP Method not supported"}
 		json.NewEncoder(w).Encode(msg)
 	}
-}
-
-/***
-    URI: /client/die
-     do a sys exit
-***/
-func die(w http.ResponseWriter, req *http.Request) {
-	log.Printf(req.Method)
-	log.Printf(req.URL.Path)
-	msg := ServerMsg{Message: "killing daemon...."}
-	json.NewEncoder(w).Encode(msg)
-	os.Exit(1)
 }
 
 /***
@@ -191,64 +83,85 @@ func die(w http.ResponseWriter, req *http.Request) {
                 200:
                     description: device removed
 ***/
-func device(w http.ResponseWriter, req *http.Request) {
+func (s *Server) DeviceHandler(w http.ResponseWriter, req *http.Request) {
+
+	var msg ServerMsg
+	var statusCode int
+
+	defer func() {
+		// Write response
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(statusCode)
+		json.NewEncoder(w).Encode(msg)
+	}()
+
 	switch req.Method {
 	case "GET":
 		// List information on a specific device
-		log.Println(req.RequestURI)
-		url_par, _ := url.Parse(req.RequestURI)
-		qmap, _ := url.ParseQuery(url_par.RawQuery)
-		ret := find_client_device(db, qmap["device"][0])
+		urlPar, _ := url.Parse(req.RequestURI)
+		qmap, _ := url.ParseQuery(urlPar.RawQuery)
+		ret, err := s.DeivcesClient.FindDeviceByName(qmap["device"][0])
+		if err != nil {
+			statusCode = http.StatusAccepted
+			msg = ServerMsg{Message: "Device not found"}
+			return
+		}
+		statusCode = http.StatusOK
 		json.NewEncoder(w).Encode(ret)
 	case "POST":
 		// Add a new device.
-		new_device := Device{}
-		decoder := json.NewDecoder(req.Body)
-		decoder.Decode(&new_device)
-		log.Println("before putting into db")
-		log.Println(new_device)
-		add_client_device(db, new_device)
-		log.Println("after putting into db")
+		newDevice, err := clientdevices.JsonReq2Device(req)
 
+		if err != nil {
+			statusCode = http.StatusBadRequest
+			msg = ServerMsg{Message: fmt.Sprintf("Error decoding json: %s", err)}
+			return
+		}
+		err = s.DeivcesClient.AddDevice(newDevice)
+		if err != nil {
+			statusCode = http.StatusInternalServerError
+			log.WithFields(log.Fields{"new_device": newDevice}).Error("Error adding new device")
+			return
+		}
+		statusCode = http.StatusOK
+		msg = ServerMsg{Message: "Adding new device successful"}
 	case "PUT":
 		// Update an existing record.
-		new_device := Device{}
-		decoder := json.NewDecoder(req.Body)
-		decoder.Decode(&new_device)
-		log.Println(new_device)
-		if (Device{}) == new_device {
-			msg := ServerMsg{Message: "Please give information for update"}
-			json.NewEncoder(w).Encode(msg)
+		newDevice, err := clientdevices.JsonReq2Device(req)
+		if err != nil {
+			statusCode = http.StatusBadRequest
+			msg = ServerMsg{Message: fmt.Sprintf("Error decoding json: %s", err)}
+			return
 		}
 
-		if new_device.Name == "" {
-			msg := ServerMsg{Message: "You must specify name when trying to update device"}
-			json.NewEncoder(w).Encode(msg)
+		if newDevice.Name == "" {
+			msg = ServerMsg{Message: "You must specify name when trying to update device"}
+			statusCode = http.StatusBadRequest
+			return
 		}
-
-		if new_device.Platform == "" && new_device.Mac == "" && new_device.Ip == "" {
-			msg := ServerMsg{Message: "Please give information for update"}
-			json.NewEncoder(w).Encode(msg)
+		err = s.DeivcesClient.UpdateDevice(newDevice)
+		if err != nil {
+			statusCode = http.StatusInternalServerError
+			log.WithFields(log.Fields{"new_device": newDevice}).Error("Error updating device")
+			return
 		}
-
-		update_client_device(db, new_device)
-
+		statusCode = http.StatusOK
+		msg = ServerMsg{Message: "Update successful"}
 	case "DELETE":
 		// Remove the record.
-		url_par, _ := url.Parse(req.RequestURI)
-		qmap, _ := url.ParseQuery(url_par.RawQuery)
-		ret := remove_client_device(db, qmap["device"][0])
-		if ret > 0 {
-			msg := ServerMsg{Message: "Device Removed"}
-			json.NewEncoder(w).Encode(msg)
-		} else {
-			msg := ServerMsg{Message: "Device name not found"}
-			json.NewEncoder(w).Encode(msg)
-		}
-		json.NewEncoder(w).Encode(ret)
+		urlPar, _ := url.Parse(req.RequestURI)
+		qmap, _ := url.ParseQuery(urlPar.RawQuery)
+		err := s.DeivcesClient.RemoveDeviceByName(qmap["device"][0])
 
+		if err != nil {
+			statusCode = http.StatusBadRequest
+			msg = ServerMsg{Message: fmt.Sprintf("Couldn't Delete device: %s", qmap["device"][0])}
+			return
+		}
+		statusCode = http.StatusOK
+		msg = ServerMsg{Message: "Delete successful"}
 	default:
-		// Give an error message.
-		log.Println("Unknown Method")
+		msg = ServerMsg{Message: "HTTP Method not supported"}
+		statusCode = http.StatusMethodNotAllowed
 	}
 }
