@@ -14,17 +14,14 @@ build_client:
 go_test:
 	go test ./...
 
-gobotics: gobotics.go
+go_mod:
 	go mod tidy
 
 	go mod vendor
 	
-	$(BUILDER) get -u github.com/mattn/go-sqlite3
-
-	$(BUILDER) get -u -d gobot.io/x/gobot/...
-
-	build_client
-	build_server
+	go get -u github.com/mattn/go-sqlite3
+	
+gobotics: go_mod build_client build_server
 
 clean veryclean:
 	$(RM) gobotics
