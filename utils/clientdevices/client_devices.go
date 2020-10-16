@@ -27,8 +27,7 @@ type ClientDevices interface {
 }
 
 func JsonReq2Device(req *http.Request) (Device, error) {
-	device := Device{}
-	decoder := json.NewDecoder(req.Body)
-	err := decoder.Decode(&device)
+	var device Device
+	err := json.NewDecoder(req.Body).Decode(&device)
 	return device, err
 }

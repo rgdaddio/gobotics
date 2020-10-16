@@ -74,21 +74,38 @@ func (s *Server) DeviceHandler(w http.ResponseWriter, req *http.Request) {
 		msg, _ = json.Marshal(ret)
 	case "POST":
 		// Add a new device.
-		newDevice, err := clientdevices.JsonReq2Device(req)
+		if req.Body == nil {
+			statusCode = http.StatusBadRequest
+			msg, _ = json.Marshal(ServerMsg{Message: "body is null"})
+			return
+		}
 
+		newDevice, err := clientdevices.JsonReq2Device(req)
 		if err != nil {
 			statusCode = http.StatusBadRequest
 			msg, _ = json.Marshal(ServerMsg{Message: fmt.Sprintf("Error decoding json: %s", err)})
 			return
 		}
+
+		if newDevice.Name == "" {
+			statusCode = http.StatusBadRequest
+			msg, _ = json.Marshal(ServerMsg{Message: "Body missing required fields"})
+			return
+		}
+
 		err = s.DeivcesClient.AddDevice(newDevice)
 		if err != nil {
+			if err.Error() == "device already exists" {
+				statusCode = http.StatusBadRequest
+				msg, _ = json.Marshal(ServerMsg{Message: "device already exists"})
+				return
+			}
 			statusCode = http.StatusInternalServerError
 			log.WithFields(log.Fields{"new_device": newDevice}).Error("Error adding new device")
 			return
 		}
 		statusCode = http.StatusOK
-		msg, _ = json.Marshal(ServerMsg{Message: "Adding new device successful"})
+		msg, _ = json.Marshal(ServerMsg{Message: "Added new device"})
 	case "PUT":
 		// Update an existing record.
 		newDevice, err := clientdevices.JsonReq2Device(req)

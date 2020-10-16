@@ -1,6 +1,8 @@
 package server_test
 
 import (
+	"bytes"
+	"database/sql"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -49,9 +51,10 @@ func TestDevicesHandler(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
+		// https://gist.github.com/posener/92a55c4cd441fc5e5e85f27bca008721
 		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
-
+			t.Parallel()
 			s := main.Server{}
 			dc, _ := mock.NewMockClient()
 			s.DeivcesClient = dc
@@ -161,16 +164,66 @@ func TestDeviceHandlerGET(t *testing.T) {
 
 func TestDeviceHandlerPOST(t *testing.T) {
 
-	// no body
+	s := main.Server{}
+	dc, _ := mock.NewMockClient()
+	s.DeivcesClient = dc
+	serverHandlerFunc := s.DeviceHandler
+	endpointUri := "/client/devices"
 
-	// inccorect json
+	sendReq := func(body sql.NullString) (int, string) {
+		var req *http.Request
+		var err error
+
+		if !body.Valid {
+			req, err = http.NewRequest("POST", endpointUri, nil)
+		} else {
+			req, err = http.NewRequest("POST", endpointUri, bytes.NewBuffer([]byte(body.String)))
+		}
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		rr := httptest.NewRecorder()
+		handler := http.HandlerFunc(serverHandlerFunc)
+		handler.ServeHTTP(rr, req)
+		return rr.Code, strings.TrimSuffix(rr.Body.String(), "\n")
+
+	}
+
+	// handles null body
+	statusCode, resp := sendReq(sql.NullString{})
+	assert.Equal(t, http.StatusBadRequest, statusCode)
+	assert.Equal(t, `{"message":"body is null"}`, resp)
+
+	// no body
+	statusCode, resp = sendReq(sql.NullString{String: ``, Valid: true})
+	assert.Equal(t, http.StatusBadRequest, statusCode)
+	assert.Equal(t, `{"message":"Error decoding json: EOF"}`, resp)
+
+	// valid json, but none of the right fields
+	statusCode, resp = sendReq(sql.NullString{String: `{"foo":"bar"}`, Valid: true})
+	assert.Equal(t, http.StatusBadRequest, statusCode)
+	assert.Equal(t, `{"message":"Body missing required fields"}`, resp)
+
+	// Missing Name field
+	statusCode, resp = sendReq(sql.NullString{String: `{"foo":"bar"}`, Valid: true})
+	assert.Equal(t, http.StatusBadRequest, statusCode)
+	assert.Equal(t, `{"message":"Body missing required fields"}`, resp)
 
 	// add device
+	statusCode, resp = sendReq(sql.NullString{String: `{"name":"foo","platform":"test","mac_address":"::0","ip_address":"1.1.1.1"}`, Valid: true})
+	assert.Equal(t, http.StatusOK, statusCode)
+	assert.Equal(t, `{"message":"Added new device"}`, resp)
+	addedDevice, err := s.DeivcesClient.FindDeviceByName("foo")
+	assert.Equal(t, nil, err)
+	assert.Equal(t, addedDevice.Name, "foo")
 
-	// adding same device again
-	// what is the behavior here?
-	// uuid?
-
+	// adding same device again - should be denied
+	sendReq(sql.NullString{String: `{"name":"bar","platform":"test","mac_address":"::0","ip_address":"1.1.1.1"}`, Valid: true})
+	statusCode, resp = sendReq(sql.NullString{String: `{"name":"bar","platform":"test","mac_address":"::0","ip_address":"1.1.1.1"}`, Valid: true})
+	assert.Equal(t, http.StatusBadRequest, statusCode)
+	assert.Equal(t, `{"message":"device already exists"}`, resp)
 }
 
 func TestDeviceHandlerPUT(t *testing.T) {

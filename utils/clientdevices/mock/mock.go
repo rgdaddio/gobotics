@@ -19,6 +19,9 @@ func NewMockClient() (clientdevices.ClientDevices, error) {
 }
 
 func (m *MockClient) AddDevice(newDevice clientdevices.Device) error {
+	if _, ok := m.devices[newDevice.Name]; ok {
+		return fmt.Errorf("device already exists")
+	}
 	m.devices[newDevice.Name] = newDevice
 	return nil
 }
