@@ -2,6 +2,7 @@ package clientdevices
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -28,6 +29,11 @@ type ClientDevices interface {
 
 func JsonReq2Device(req *http.Request) (Device, error) {
 	var device Device
+
+	if req.Body == nil {
+		return device, fmt.Errorf("body is null")
+	}
+
 	err := json.NewDecoder(req.Body).Decode(&device)
 	return device, err
 }

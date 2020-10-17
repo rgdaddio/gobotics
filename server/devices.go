@@ -74,12 +74,6 @@ func (s *Server) DeviceHandler(w http.ResponseWriter, req *http.Request) {
 		msg, _ = json.Marshal(ret)
 	case "POST":
 		// Add a new device.
-		if req.Body == nil {
-			statusCode = http.StatusBadRequest
-			msg, _ = json.Marshal(ServerMsg{Message: "body is null"})
-			return
-		}
-
 		newDevice, err := clientdevices.JsonReq2Device(req)
 		if err != nil {
 			statusCode = http.StatusBadRequest
@@ -120,12 +114,19 @@ func (s *Server) DeviceHandler(w http.ResponseWriter, req *http.Request) {
 			statusCode = http.StatusBadRequest
 			return
 		}
+
 		err = s.DeivcesClient.UpdateDevice(newDevice)
 		if err != nil {
+			if err.Error() == "device not found" {
+				statusCode = http.StatusNotFound
+				msg, _ = json.Marshal(ServerMsg{Message: "Device not found"})
+				return
+			}
 			statusCode = http.StatusInternalServerError
 			log.WithFields(log.Fields{"new_device": newDevice}).Error("Error updating device")
 			return
 		}
+
 		statusCode = http.StatusOK
 		msg, _ = json.Marshal(ServerMsg{Message: "Update successful"})
 	case "DELETE":

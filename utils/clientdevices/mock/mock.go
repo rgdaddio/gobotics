@@ -31,14 +31,14 @@ func (m *MockClient) UpdateDevice(device clientdevices.Device) error {
 		m.devices[device.Name] = device
 		return nil
 	}
-	return fmt.Errorf("Device %s not found", device.Name)
+	return fmt.Errorf("device not found")
 }
 
 func (m *MockClient) FindDeviceByName(deviceName string) (clientdevices.Device, error) {
 	if device, ok := m.devices[deviceName]; ok {
 		return device, nil
 	}
-	return clientdevices.Device{}, fmt.Errorf("Device %s not found", deviceName)
+	return clientdevices.Device{}, fmt.Errorf("device not found")
 }
 
 func (m *MockClient) RemoveDeviceByName(deviceName string) error {
@@ -46,7 +46,7 @@ func (m *MockClient) RemoveDeviceByName(deviceName string) error {
 		delete(m.devices, deviceName)
 		return nil
 	}
-	return fmt.Errorf("Device %s not found", deviceName)
+	return fmt.Errorf("device not found")
 }
 
 func (m *MockClient) GetAllDevices() (clientdevices.Devices, error) {

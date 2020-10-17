@@ -3,6 +3,7 @@ package server_test
 import (
 	"bytes"
 	"database/sql"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -194,7 +195,7 @@ func TestDeviceHandlerPOST(t *testing.T) {
 	// handles null body
 	statusCode, resp := sendReq(sql.NullString{})
 	assert.Equal(t, http.StatusBadRequest, statusCode)
-	assert.Equal(t, `{"message":"body is null"}`, resp)
+	assert.Equal(t, `{"message":"Error decoding json: body is null"}`, resp)
 
 	// no body
 	statusCode, resp = sendReq(sql.NullString{String: ``, Valid: true})
@@ -227,9 +228,119 @@ func TestDeviceHandlerPOST(t *testing.T) {
 }
 
 func TestDeviceHandlerPUT(t *testing.T) {
+	testCases := []struct {
+		name                 string
+		requestMethod        string
+		devicesToAdd         cd.Devices
+		devicesToUpdate      cd.Devices
+		expectedResponseCode int
+		expectedResponse     string
+	}{
+		{
+			name:          "Add no devices and try to update one",
+			requestMethod: "PUT",
+			devicesToUpdate: []cd.Device{
+				cd.Device{
+					Name:     "foo",
+					Ip:       "1.1.1.1",
+					Mac:      "::0",
+					Platform: "test",
+				},
+			},
+			expectedResponseCode: http.StatusNotFound,
+			expectedResponse:     `{"message":"Device not found"}`,
+		},
+		{
+			name:          "Add one devices and try to update it",
+			requestMethod: "PUT",
+			devicesToAdd: []cd.Device{
+				cd.Device{
+					Name:     "foo",
+					Ip:       "3.3.3.3",
+					Mac:      "::0",
+					Platform: "test",
+				},
+			},
+			devicesToUpdate: []cd.Device{
+				cd.Device{
+					Name:     "foo",
+					Ip:       "1.1.1.1",
+					Mac:      "::0",
+					Platform: "test",
+				},
+			},
+			expectedResponseCode: http.StatusOK,
+			expectedResponse:     `{"message":"Update successful"}`,
+		},
+		{
+			name:          "Add one devices and try to update it",
+			requestMethod: "PUT",
+			devicesToAdd: []cd.Device{
+				cd.Device{
+					Name:     "foo",
+					Ip:       "3.3.3.3",
+					Mac:      "::0",
+					Platform: "test",
+				},
+			},
+			devicesToUpdate: []cd.Device{
+				cd.Device{
+					Name:     "bar",
+					Ip:       "1.1.1.1",
+					Mac:      "::0",
+					Platform: "test",
+				},
+			},
+			expectedResponseCode: http.StatusNotFound,
+			expectedResponse:     `{"message":"Device not found"}`,
+		},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			s := main.Server{}
+			dc, _ := mock.NewMockClient()
+			s.DeivcesClient = dc
+			serverHandlerFunc := s.DeviceHandler
+			endpointUri := "/client/devices"
+
+			if len(tc.devicesToAdd) > 0 {
+				for _, device := range tc.devicesToAdd {
+					s.DeivcesClient.AddDevice(device)
+				}
+			}
+
+			if len(tc.devicesToUpdate) > 0 {
+				for _, device := range tc.devicesToUpdate {
+
+					deviceJson, _ := json.Marshal(device)
+
+					req, err := http.NewRequest("PUT", endpointUri, bytes.NewBuffer([]byte(deviceJson)))
+					if err != nil {
+						t.Fatal(err)
+					}
+
+					rr := httptest.NewRecorder()
+					handler := http.HandlerFunc(serverHandlerFunc)
+					handler.ServeHTTP(rr, req)
+					status := rr.Code
+					assert.Equal(t, tc.expectedResponseCode, status)
+					assert.Equal(t, tc.expectedResponse, strings.TrimSuffix(rr.Body.String(), "\n"))
+				}
+			}
+
+		})
+	}
+
+	// PUT add device and then try updating a different device
 
 }
 
 func TestDeviceHandlerDELETE(t *testing.T) {
+	// try delete when there are no devices
 
+	// delete add a device and then delete
+
+	// delete add device and then try to delete a different one
 }
