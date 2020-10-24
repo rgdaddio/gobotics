@@ -11,7 +11,8 @@ import (
 
 // ServerMsg - default return message for all endpoints
 type ServerMsg struct {
-	Message string `json:"message"`
+	Message string                `json:"message"`
+	Devices clientdevices.Devices `json:"devices,omitempty"`
 }
 
 type Server struct {
@@ -20,7 +21,9 @@ type Server struct {
 
 /***
     URI: /client/die
-     do a sys exit
+	 do a sys exit
+
+	 TODO: remove or add auth to this
 ***/
 func (s *Server) die(w http.ResponseWriter, req *http.Request) {
 	log.Printf(req.Method)

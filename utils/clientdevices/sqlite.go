@@ -14,8 +14,16 @@ type SqlLiteDevices struct {
 }
 
 func initDB(db *sql.DB) error {
-	stmt, _ := db.Prepare("create table if not exists client_devices( " +
-		" name text, platform text, mac_address text, ip_address varchar(15), stats_table text);")
+	stmt, _ := db.Prepare(
+		`CREATE TABLE if not exists 
+		client_devices(
+			name text, 
+			platform text, 
+			mac_address text, 
+			ip_address varchar(15), 
+			PRIMARY KEY (name)
+			);`,
+	)
 	_, err := stmt.Exec()
 	return err
 }
