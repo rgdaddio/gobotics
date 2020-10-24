@@ -131,13 +131,19 @@ func (s *Server) DeviceHandler(w http.ResponseWriter, req *http.Request) {
 		msg, _ = json.Marshal(ServerMsg{Message: "Update successful"})
 	case "DELETE":
 		// Remove the record.
-		urlPar, _ := url.Parse(req.RequestURI)
-		qmap, _ := url.ParseQuery(urlPar.RawQuery)
-		err := s.DeivcesClient.RemoveDeviceByName(qmap["device"][0])
+		qmap, _ := url.ParseQuery(req.URL.RawQuery)
+		deviceName := qmap.Get("device")
+
+		err := s.DeivcesClient.RemoveDeviceByName(deviceName)
 
 		if err != nil {
-			statusCode = http.StatusBadRequest
-			msg, _ = json.Marshal(ServerMsg{Message: fmt.Sprintf("Couldn't Delete device: %s", qmap["device"][0])})
+			if err.Error() == "device not found" {
+				statusCode = http.StatusNotFound
+				msg, _ = json.Marshal(ServerMsg{Message: "Device not found"})
+				return
+			}
+			statusCode = http.StatusInternalServerError
+			log.WithFields(log.Fields{"device": deviceName}).Error("Error updating device")
 			return
 		}
 		statusCode = http.StatusOK

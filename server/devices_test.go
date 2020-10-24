@@ -273,7 +273,7 @@ func TestDeviceHandlerPUT(t *testing.T) {
 			expectedResponse:     `{"message":"Update successful"}`,
 		},
 		{
-			name:          "Add one devices and try to update it",
+			name:          "Add one devices and try to update a different one that doesnt exist",
 			requestMethod: "PUT",
 			devicesToAdd: []cd.Device{
 				cd.Device{
@@ -332,15 +332,66 @@ func TestDeviceHandlerPUT(t *testing.T) {
 
 		})
 	}
-
-	// PUT add device and then try updating a different device
-
 }
 
 func TestDeviceHandlerDELETE(t *testing.T) {
-	// try delete when there are no devices
+	testCases := []struct {
+		name                 string
+		requestMethod        string
+		devicesToAdd         cd.Devices
+		devicesToDelete      cd.Devices
+		expectedResponseCode int
+		expectedResponse     string
+	}{
+		{
+			name:          "delete a device that doesnt exist",
+			requestMethod: "DELETE",
+			devicesToDelete: []cd.Device{
+				cd.Device{
+					Name:     "foo",
+					Ip:       "1.1.1.1",
+					Mac:      "::0",
+					Platform: "test",
+				},
+			},
+			expectedResponseCode: http.StatusNotFound,
+			expectedResponse:     `{"message":"Device not found"}`,
+		},
+	}
+	for _, tc := range testCases {
+		tc := tc
+		t.Run(tc.name, func(t *testing.T) {
+			s := main.Server{}
+			dc, _ := mock.NewMockClient()
+			s.DeivcesClient = dc
+			serverHandlerFunc := s.DeviceHandler
+			endpointUri := "/client/devices"
 
-	// delete add a device and then delete
+			if len(tc.devicesToAdd) > 0 {
+				for _, device := range tc.devicesToAdd {
+					s.DeivcesClient.AddDevice(device)
+				}
+			}
 
-	// delete add device and then try to delete a different one
+			if len(tc.devicesToDelete) > 0 {
+				for _, device := range tc.devicesToDelete {
+
+					deviceJson, _ := json.Marshal(device)
+
+					req, err := http.NewRequest(tc.requestMethod, endpointUri, bytes.NewBuffer([]byte(deviceJson)))
+					if err != nil {
+						t.Fatal(err)
+					}
+
+					rr := httptest.NewRecorder()
+					handler := http.HandlerFunc(serverHandlerFunc)
+					handler.ServeHTTP(rr, req)
+					status := rr.Code
+					assert.Equal(t, tc.expectedResponseCode, status)
+					assert.Equal(t, tc.expectedResponse, strings.TrimSuffix(rr.Body.String(), "\n"))
+				}
+			}
+
+		})
+	}
 }
