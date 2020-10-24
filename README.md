@@ -11,7 +11,7 @@ Imagine a robotics solution that provides:
 Gobotics is a skunkworkds proof of concept project to help us learn more about golang/web development. It tries to focus on the IoT/device space.
 
 Currently it is composed of the following:
-* [`gobotics_server`](https://github.com/rgdaddio/gobotics/tree/master/cmd/server): REST API server (golang) - Simple CRUD REST API to add,get,update, & delete information on devices. 
+* [`gobotics_server`](https://github.com/rgdaddio/gobotics/tree/master/server): REST API server (golang) - A simple CRUD REST API to add,get,update, & delete information on devices. 
 * `gobotics_client`: a commandline client to the `gobotics_server` (golang)
 * `gobotics-frontend`: React Frontend web application
 
